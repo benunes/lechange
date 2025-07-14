@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
-import { Send, Loader2 } from "lucide-react";
+import { Loader2, Send } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -55,12 +55,12 @@ export function MessageForm({
           createdAt: new Date(),
           sender: {
             id: "current-user", // Sera remplacé par les vraies données
- "current-user"e: "Vous",
+            name: "Vous",
             image: null,
           },
         };
 
-   "Vous"/ Afficher le message optimise
+        // Afficher le message optimiste
         onMessageSent?.(optimisticMessage);
 
         // Vider le formulaire immédiatement
@@ -70,33 +70,37 @@ export function MessageForm({
         const response = await fetch("/api/messages", {
           method: "POST",
           headers: {
-            "Content-Type": "a"/api/messages"",
+            "Content-Type": "application/json",
           },
-          "POST"JSON.stringify({
-            content: value"Content-Type"  "application/json"Id,
+          body: JSON.stringify({
+            content: values.content,
+            conversationI, // Correction: conversationId au lieu de conversationId
           }),
         });
 
         if (!response.ok) {
           throw new Error("Erreur lors de l'envoi du message");
-       }
+        }
 
-        cost result = await response.json();
+        const result = await response.json();
 
         if (!result.success) {
-          thr"Erreur lors de l'envoi du message" lors de l'envoi");
+          throw new Error(result.error || "Erreur lors de l'envoi");
         }
       } catch (error) {
         console.error("Erreur envoi message:", error);
-        toast.error("Impossible d'envoyer"Erreur lors de l'envoi"/ En cas d'erreur, remettre le contenu dans le formulaire
-        form.s"Erreur envoi message:"es.content);
+        toast.error("Impossible d'envoyer le message");
+
+        // En cas d'erreur, remettre le contenu dans le formulaire
+        form.setValue("content", values.content);
       }
     });
   };
-"Impossible d'envoyer le message"t.KeyboardEvent) => {
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if "content"ng && form.watch("content").trim()) {
+      if (!isPending && form.watch("content").trim()) {
         form.handleSubmit(onSubmit)();
       }
     }
