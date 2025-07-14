@@ -74,7 +74,7 @@ export function MessageForm({
           },
           body: JSON.stringify({
             content: values.content,
-            conversationI, // Correction: conversationId au lieu de conversationId
+            conversationId, // Correction: conversationId au lieu de conversationId
           }),
         });
 

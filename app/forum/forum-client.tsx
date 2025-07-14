@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   AlertCircle,
+  ArrowLeft,
   Calendar,
   CheckCircle,
   Clock,
@@ -24,8 +25,6 @@ import {
   Plus,
   Search,
   TrendingUp,
-  User,
-  ArrowLeft,
 } from "lucide-react";
 import { getUserBadge } from "@/lib/utils/user-badges";
 import { TagFilter } from "@/components/forum/tag-filter";
@@ -93,7 +92,7 @@ export default function ForumClientPage({
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("recent");
   const [filterBy, setFilterBy] = useState("all");
-  const [badgeFilter, setBadgeFilter] = useState("all");
+  const [badgeFilter] = useState("all");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [timeFilter, setTimeFilter] = useState("all");
 
@@ -180,14 +179,14 @@ export default function ForumClientPage({
     if (sortBy === "recent") {
       filtered.sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTim(),
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
     } else if (sortBy === "popular") {
       filtered.sort((a, b) => b._count.answers - a._count.answers);
     } else if (sortBy === "oldest") {
       filtered.sort(
         (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTim(),
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
       );
     }
 
@@ -519,7 +518,7 @@ export default function ForumClientPage({
                             {
                               day: "2-digit",
                               month: "2-digit",
-                              year: "numeri",
+                              year: "numeric",
                             },
                           )}
                         </time>
