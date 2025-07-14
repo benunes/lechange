@@ -1,46 +1,90 @@
-import {PrismaClient} from "@/lib/generated/prisma";
+import { prisma } from "@/lib/db";
 import ForumClientPage from "./forum-client";
+import { getCategories } from "@/lib/actions/categories.actions";
 
-const prisma = new PrismaClient();
+async function getQuestions(categoryId?: string) {
+  const whereClause = categoryId ? { categoryId } : {};
 
-async function getQuestions() {
-    return prisma.question.findMany({
-        orderBy: {
-            createdAt: "desc",
-        },
-        include: {
-            author: {
-                select: {
-                    name: true,
-                },
+  return prisma.question.findMany({
+    where: whereClause,
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      author: {
+        select: {
+          id: true,
+          name: true,
+          // Inclure les stats pour les badges
+          _count: {
+            select: {
+              questions: true,
+              answers: true,
             },
-            _count: {
-                select: {
-                    answers: true,
-                },
+          },
+          answers: {
+            select: {
+              upvotes: true,
             },
+          },
         },
-    });
+      },
+      category: {
+        select: {
+          id: true,
+          name: true,
+          icon: true,
+          color: true,
+          slug: true,
+        },
+      },
+      _count: {
+        select: {
+          answers: true,
+        },
+      },
+    },
+  });
 }
 
 async function getForumStats() {
-    const [questionsCount, answersCount] = await Promise.all([
-        prisma.question.count(),
-        prisma.answer.count(),
-    ]);
-    return {questionsCount, answersCount};
+  const [questionsCount, answersCount] = await Promise.all([
+    prisma.question.count(),
+    prisma.aswer.count(),
+  ]);
+  return { questionsCount, answersCount };
 }
 
-export default async function ForumPage() {
-    const [questions, stats] = await Promise.all([
-        getQuestions(),
-        getForumStats(),
-    ]);
+interface ForumPageProps {
+  searchParams: Promise<{ category?: string }>;
+}
 
-    return (
-        <ForumClientPage
-            initialQuestions={questions}
-            initialStats={stats}
-        />
-    );
+export default async function ForumPage({ searchParams }: ForumPageProps) {
+  const params = await searchParams;
+  const selectedCategorySlug = params.category;
+
+  const [categories, stats] = await Promise.all([
+    getCategories(),
+    getForumStats(),
+  ]);
+
+  // Trouver la catégorie sélectionnée par son slug
+  const selectedCategory = selectedCategorySlug
+    ? categories.find((cat) => cat.slug === selectedCategorySlug)
+    : null;
+
+  // Charger les questions seulement si une catégorie est sélectionnée
+  const questions = selectedCategory
+    ? await getQuestions(selectedCategory.id)
+    : [];
+
+  return (
+    <ForumClientPage
+      initialQuestions={questions}
+      initialStats={stats}
+      categories={categories}
+      selectedCategory={selectedCategory}
+      showCategorySelection={!selectedCategory}
+    />
+  );
 }

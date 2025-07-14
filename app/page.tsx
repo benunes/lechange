@@ -1,12 +1,18 @@
 import {Button} from "@/components/ui/button";
-import {Card, CardContent, CardFooter, CardHeader, CardTitle,} from "@/components/ui/card";
-import {PrismaClient} from "@/lib/generated/prisma";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
-import {Badge} from "@/components/ui/badge";
 import {ArrowRight, Filter, Heart, MessageCircle, Plus, Search, Sparkles, TrendingUp, Users, Zap,} from "lucide-react";
-
-const prisma = new PrismaClient();
 
 async function getListings() {
   const listings = await prisma.listing.findMany({

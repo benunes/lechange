@@ -1,15 +1,14 @@
 import {ChatView} from "@/components/messages/chat-view";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {auth} from "@/lib/auth";
-import {PrismaClient} from "@/lib/generated/prisma";
+import { prisma } from "@/lib/db";
 import {headers} from "next/headers";
 import {notFound, redirect} from "next/navigation";
-import {Button} from "@/components/ui/button";
-import {Badge} from "@/components/ui/badge";
 import {ArrowLeft, MessageCircle, MoreVertical, Phone, User, Video,} from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-
-const prisma = new PrismaClient();
 
 async function getConversation(conversationId: string, userId: string) {
     const conversation = await prisma.conversation.findUnique({

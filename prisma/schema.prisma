@@ -11,6 +11,25 @@ datasource db {
 enum UserRole {
   USER
   ADMIN
+  MODERATOR
+  SUSPENDED
+}
+
+enum ReportType {
+  INAPPROPRIATE_CONTENT
+  SPAM
+  HARASSMENT
+  FAKE_LISTING
+  SCAM
+  COPYRIGHT
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+  DISMISSED
 }
 
 // Models required by Better Auth
@@ -29,12 +48,19 @@ model User {
   sessions Session[]
 
   // Relations for our application
-  listings      Listing[]
-  favorites     Favorite[]
-  conversations ConversationParticipant[]
-  messages      Message[]
-  questions     Question[]
-  answers       Answer[]
+  listings        Listing[]
+  favorites       Favorite[]
+  conversations   ConversationParticipant[]
+  messages        Message[]
+  questions       Question[]
+  answers         Answer[]
+  answerVotes     AnswerVote[]
+  notifications   Notification[]
+  questionFollows QuestionFollow[]
+  tagFollows      TagFollow[]
+  reports         Report[]
+  adminLogs       AdminLog[]                @relation("AdminLogs")
+  Category        Category[]
 
   @@map("user")
 }
@@ -87,6 +113,21 @@ model Verification {
 }
 
 // Application-specific models
+model Category {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  description String?
+  icon        String // Nom de l'icône Lucide React
+  color       String // Couleur hexadécimale
+  slug        String     @unique
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  createdBy   User       @relation(fields: [createdById], references: [id])
+  createdById String
+  questions   Question[]
+}
+
 model Listing {
   id          String   @id @default(cuid())
   title       String
@@ -101,6 +142,7 @@ model Listing {
   createdBy    User           @relation(fields: [createdById], references: [id])
   favorites    Favorite[]
   conversation Conversation[]
+  reports      Report[]
 }
 
 model Favorite {
@@ -146,16 +188,22 @@ model Message {
 }
 
 model Question {
-  id        String   @id @default(cuid())
-  title     String
-  content   String
-  tags      String[]
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  author  User     @relation(fields: [authorId], references: [id])
-  answers Answer[]
+  id           String           @id @default(cuid())
+  title        String
+  content      String?
+  tags         String[]
+  images       String[] // URLs des images uploadées
+  categoryId   String? // Nouvelle relation vers Category
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  author       User             @relation(fields: [authorId], references: [id])
+  authorId     String
+  category     Category?        @relation(fields: [categoryId], references: [id])
+  answers      Answer[]         @relation("AnswersOnQuestion")
+  bestAnswerId String?          @unique
+  bestAnswer   Answer?          @relation("BestAnswer", fields: [bestAnswerId], references: [id])
+  followers    QuestionFollow[]
+  reports      Report[]
 }
 
 model Answer {
@@ -163,11 +211,114 @@ model Answer {
   content    String
   questionId String
   authorId   String
+  parentId   String? // Pour les réponses imbriquées
   upvotes    Int      @default(0)
   downvotes  Int      @default(0)
+  images     String[] // URLs des images uploadées
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  question Question @relation(fields: [questionId], references: [id])
-  author   User     @relation(fields: [authorId], references: [id])
+  question        Question     @relation("AnswersOnQuestion", fields: [questionId], references: [id])
+  author          User         @relation(fields: [authorId], references: [id])
+  votes           AnswerVote[]
+  bestForQuestion Question?    @relation("BestAnswer")
+
+  // Relations pour les réponses imbriquées
+  parent  Answer?  @relation("AnswerReplies", fields: [parentId], references: [id])
+  replies Answer[] @relation("AnswerReplies")
+  reports Report[]
+}
+
+model AnswerVote {
+  id        String   @id @default(cuid())
+  userId    String
+  answerId  String
+  isUpvote  Boolean // true pour upvote, false pour downvote
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  answer Answer @relation(fields: [answerId], references: [id])
+
+  @@unique([userId, answerId])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  read      Boolean          @default(false)
+  data      Json? // Données supplémentaires (questionId, answerId, etc.)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum NotificationType {
+  NEW_ANSWER // Nouvelle réponse à ta question
+  BEST_ANSWER // Ta réponse a été marquée comme meilleure
+  QUESTION_FOLLOWED // Nouvelle réponse à une question suivie
+  MENTION // Tu as été mentionné
+  UPVOTE // Ta réponse a reçu un upvote
+}
+
+model QuestionFollow {
+  id         String   @id @default(cuid())
+  userId     String
+  questionId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, questionId])
+}
+
+model TagFollow {
+  id        String   @id @default(cuid())
+  userId    String
+  tag       String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tag])
+}
+
+model Report {
+  id         String       @id @default(cuid())
+  type       ReportType
+  status     ReportStatus @default(PENDING)
+  details    String?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  reportedBy String
+  listingId  String?
+  questionId String?
+  answerId   String?
+
+  user     User      @relation(fields: [reportedBy], references: [id], onDelete: Cascade)
+  listing  Listing?  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  question Question? @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answer   Answer?   @relation(fields: [answerId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@index([questionId])
+  @@index([answerId])
+}
+
+model AdminLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  action     String // DELETE_CONTENT, BAN_USER, CHANGE_ROLE, etc.
+  details    String?
+  targetType String? // USER, LISTING, QUESTION, ANSWER
+  targetId   String?
+  createdAt  DateTime @default(now())
+
+  admin User @relation("AdminLogs", fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([createdAt])
 }

@@ -1,13 +1,25 @@
+import { Badge } from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
-import {Card, CardContent, CardFooter, CardHeader, CardTitle,} from "@/components/ui/card";
-import {Input} from "@/components/ui/input";
-import {Badge} from "@/components/ui/badge";
-import {PrismaClient} from "@/lib/generated/prisma";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  electValue,
+} from "@/components/ui/select";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import Image from "next/image";
 import Link from "next/link";
 import {ArrowRight, Grid3X3, Heart, List, Plus, Search, SlidersHorizontal, Sparkles} from "lucide-react";
-
-const prisma = new PrismaClient();
 
 async function getListings() {
     const listings = await prisma.listing.findMany({
