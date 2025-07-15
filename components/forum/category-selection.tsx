@@ -15,9 +15,24 @@ import {
   ArrowRight,
   Sparkles,
   TrendingUp,
+  Code,
+  Lightbulb,
+  Music,
+  Palette,
+  Camera,
+  Briefcase,
+  Zap,
+  Star,
+  Globe,
+  Cpu,
+  Smartphone,
+  Car,
+  Home,
+  ShoppingBag,
+  Coffee,
 } from "lucide-react";
 
-// Map des icônes pour les catégories
+// Map des icônes pour les catégories - synchronisé avec le composant admin
 const iconMap = {
   MessageCircle,
   Monitor,
@@ -26,6 +41,21 @@ const iconMap = {
   Gamepad2,
   MapPin,
   HelpCircle,
+  Code,
+  Lightbulb,
+  Music,
+  Palette,
+  Camera,
+  Briefcase,
+  Zap,
+  Star,
+  Globe,
+  Cpu,
+  Smartphone,
+  Car,
+  Home,
+  ShoppingBag,
+  Coffee,
 };
 
 interface Category {

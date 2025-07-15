@@ -71,7 +71,7 @@ interface Category {
 
 interface CategoriesManagementProps {
   categories: Category[];
-  onUpdate: () => void;
+  onUpdate?: () => void; // Rendre optionnel
 }
 
 const formSchema = z.object({
@@ -181,7 +181,7 @@ export function CategoriesManagement({
             setIsDialogOpen(false);
             setEditingCategory(null);
             form.reset();
-            onUpdate();
+            onUpdate?.();
           }
         } else {
           // Mode création
@@ -197,7 +197,7 @@ export function CategoriesManagement({
             setIsDialogOpen(false);
             setEditingCategory(null);
             form.reset();
-            onUpdate();
+            onUpdate?.();
           }
         }
       } catch (error) {
@@ -219,7 +219,7 @@ export function CategoriesManagement({
           toast.error(result.error);
         } else {
           toast.success(result.success);
-          onUpdate();
+          onUpdate?.();
         }
       } catch (error) {
         toast.error("Une erreur inattendue s'est produite");
@@ -243,7 +243,7 @@ export function CategoriesManagement({
           toast.error(result.error);
         } else {
           toast.success(result.success);
-          onUpdate();
+          onUpdate?.();
         }
       } catch (error) {
         toast.error("Une erreur inattendue s'est produite");
@@ -305,6 +305,7 @@ export function CategoriesManagement({
             <form
               onSubmit={form.handleSubmit(handleSubmit)}
               className="space-y-6"
+              style={{ zIndex: 2147483648 }} // Z-index plus élevé pour le contenu de la modal
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">

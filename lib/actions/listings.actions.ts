@@ -7,14 +7,16 @@ import { headers } from "next/headers";
 import * as z from "zod";
 
 const listingSchema = z.object({
-    title: z.string().min(1),
-    description: z.string().min(1),
-    category: z.string().min(1),
-    price: z.string().optional(),
-    images: z.array(z.string().url()).optional(),
+  title: z.string().min(1),
+  description: z.string().min(1),
+  categoryId: z.string().min(1), // Changer category en categoryId
+  price: z.string().optional(),
+  images: z.array(z.string().url()).optional(),
+  condition: z.string().optional(),
+  location: z.string().optional(),
 });
 
-export async function createListing(values: z.infer<typeof listingSchema>) {
+eport async function createListing(values: z.infer<typeof listingSchema>) {
   const session = await auth.api.getSession({ headers: await headers() });
 
     if (!session) {
@@ -27,16 +29,18 @@ export async function createListing(values: z.infer<typeof listingSchema>) {
       return { error: "Champs invalides." };
     }
 
-  const { title, description, category, price, images } = validatedFields.data;
+  const { title, description, categoryId, price, images, condition, location } = validatedFields.data;
 
     try {
         await prisma.listing.create({
             data: {
                 title,
                 description,
-                category,
+              categoryId, // Utiliser categoryId au lieu de category
                 price: price ? parseFloat(price) : null,
                 images: images || [],
+              condition,
+              location,
                 createdById: session.user.id,
             },
         });

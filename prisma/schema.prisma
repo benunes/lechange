@@ -48,19 +48,20 @@ model User {
   sessions Session[]
 
   // Relations for our application
-  listings        Listing[]
-  favorites       Favorite[]
-  conversations   ConversationParticipant[]
-  messages        Message[]
-  questions       Question[]
-  answers         Answer[]
-  answerVotes     AnswerVote[]
-  notifications   Notification[]
-  questionFollows QuestionFollow[]
-  tagFollows      TagFollow[]
-  reports         Report[]
-  adminLogs       AdminLog[]                @relation("AdminLogs")
-  Category        Category[]
+  listings          Listing[]
+  favorites         Favorite[]
+  conversations     ConversationParticipant[]
+  messages          Message[]
+  questions         Question[]
+  answers           Answer[]
+  answerVotes       AnswerVote[]
+  notifications     Notification[]
+  questionFollows   QuestionFollow[]
+  tagFollows        TagFollow[]
+  reports           Report[]
+  adminLogs         AdminLog[]                @relation("AdminLogs")
+  forumCategories   Category[]                @relation("ForumCategoryCreator")
+  listingCategories ListingCategory[]         @relation("ListingCategoryCreator")
 
   @@map("user")
 }
@@ -113,6 +114,30 @@ model Verification {
 }
 
 // Application-specific models
+
+// Modèle pour les catégories d'annonces
+model ListingCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  icon        String // Nom de l'icône Lucide React
+  color       String // Couleur hexadécimale
+  slug        String   @unique
+  isActive    Boolean  @default(true)
+  parentId    String? // Pour les sous-catégories
+  order       Int      @default(0) // Ordre d'affichage
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   User     @relation("ListingCategoryCreator", fields: [createdById], references: [id])
+  createdById String
+
+  // Relations
+  parent        ListingCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  subcategories ListingCategory[] @relation("CategoryHierarchy")
+  listings      Listing[]
+}
+
+// Modèle pour les catégories du forum (existant)
 model Category {
   id          String     @id @default(cuid())
   name        String     @unique
@@ -123,7 +148,7 @@ model Category {
   isActive    Boolean    @default(true)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-  createdBy   User       @relation(fields: [createdById], references: [id])
+  createdBy   User       @relation("ForumCategoryCreator", fields: [createdById], references: [id])
   createdById String
   questions   Question[]
 }
@@ -133,13 +158,16 @@ model Listing {
   title       String
   description String
   price       Float?
-  category    String
+  categoryId  String // Changé de category String vers categoryId String
+  condition   String? // Neuf, Très bon état, Bon état, État correct
+  location    String? // Localisation optionnelle
   images      String[]
   createdById String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  createdBy    User           @relation(fields: [createdById], references: [id])
+  createdBy    User            @relation(fields: [createdById], references: [id])
+  category     ListingCategory @relation(fields: [categoryId], references: [id])
   favorites    Favorite[]
   conversation Conversation[]
   reports      Report[]

@@ -54,88 +54,91 @@ const answerSchema = z.object({
   mentionedUserIds: z.array(z.string()).optional(),
 });
 
-export async fuction createAnswer(values: z.infer<typeof answerSchema>) {
-    const session = await auth.api.getSession({headers: await headers()});
+export async function createAnswer(values: z.infer<typeof answerSchema>) {
+  const session = await auth.api.getSession({ headers: await headers() });
 
-    if (!session) {
-        return {error: "Non autorisé."};
-    }
+  if (!session) {
+    return { error: "Non autorisé." };
+  }
 
-    const validatedFields = answerSchema.safeParse(values);
+  const validatedFields = answerSchema.safeParse(values);
 
-    if (!validatedFields.success) {
-        return {error: "Champs invalides."};
-    }
+  if (!validatedFields.success) {
+    return { error: "Champs invalides." };
+  }
 
   const { content, questionId, mentionedUserIds = [] } = validatedFields.data;
 
-    try {
-      // Créer la réponse
-      const answer = await prisma.answer.create({
-            data: {
-                content,
-                questionId,
-                authorId: session.user.id,
-            },
-        });
+  try {
+    // Créer la réponse
+    const answer = await prisma.answer.create({
+      data: {
+        content,
+        questionId,
+        authorId: session.user.id,
+      },
+    });
 
-      // Récupérer la question pour notifier l'auteur
-      const question = await prisma.question.findUnique({
-        where: { id: questionId },
-        include: {
-          author: true,
-          followers: true
-        }
-      });
+    // Récupérer la question pour notifier l'auteur
+    const question = await prisma.question.findUnique({
+      where: { id: questionId },
+      include: {
+        author: true,
+        followers: true,
+      },
+    });
 
-      if (question) {
-        // Notifier l'auteur de la question (si pas lui-même)
-        if (question.authorId !== session.user.id) {
+    if (question) {
+      // Notifier l'auteur de la question (si pas lui-même)
+      if (question.authorId !== session.user.id) {
+        await createNotification(
+          question.authorId,
+          "NEW_ANSWER",
+          "Nouvelle réponse",
+          `${session.user.name} a répondu à votre question "${question.title}"`,
+          { questionId, answerId: answer.id },
+        );
+      }
+
+      // Notifier tous les followers de la question
+      for (const follower of question.followers) {
+        if (
+          follower.userId !== session.user.id &&
+          follower.userId !== question.authorId
+        ) {
           await createNotification(
-            question.authorId,
-            "NEW_ANSWER",
-            "Nouvelle réponse",
-            `${session.user.name} a répondu à votre question "${question.title}"`,
-            { questionId, answerId: answer.id }
+            follower.userId,
+            "QUESTION_FOLLOWED",
+            "Nouvelle réponse sur une question suivie",
+            `${session.user.name} a répondu à "${question.title}"`,
+            { questionId, answerId: answer.id },
           );
-        }
-
-        // Notifier tous les followers de la question
-        for (const follower of question.followers) {
-          if (follower.userId !== session.user.id && follower.userId !== question.authorId) {
-            await createNotification(
-              follower.userId,
-              "QUESTION_FOLLOWED",
-              "Nouvelle réponse sur une question suivie",
-              `${session.user.name} a répondu à "${question.title}"`,
-              { questionId, answerId: answer.id }
-            );
-          }
-        }
-
-        // Gérer les mentions avec les IDs fournis (approche plus efficace)
-        if (mentionedUserIds.length > 0) {
-          // Créer des notifications pour chaque utilisateur mentionné
-          for (const userId of mentionedUserIds) {
-            if (userId !== session.user.id) {
-              await createNotification(
-                userId,
-                "MENTION",
-                "Vous avez été mentionné",
-                `${session.user.name} vous a mentionné dans une réponse à "${question.title}"`,
-                { questionId, answerId: answer.id }
-              );
-            }
-          }
         }
       }
 
-        revalidatePath(`/forum/${questionId}`);
-        return {success: "Réponse publiée !"};
-    } catch (error) {
-      console.error("Erreur lors de la création de la réponse:", error);
-        return {error: "Une erreur est survenue."};
+      // Gérer les mentions avec les IDs fournis (approche plus efficace)
+      if (mentionedUserIds.length > 0) {
+        // Créer des notifications pour chaque utilisateur mentionné
+        for (const userId of mentionedUserIds) {
+          if (userId !== session.user.id) {
+            await createNotification(
+              userId,
+              "MENTION",
+              "Vous avez été mentionné",
+              `${session.user.name} vous a mentionné dans une réponse à "${question.title}"`,
+              { questionId, answerId: answer.id },
+            );
+          }
+        }
+      }
     }
+
+    revalidatePath(`/forum/${questionId}`);
+    return { success: "Réponse publiée !" };
+  } catch (error) {
+    console.error("Erreur lors de la création de la réponse:", error);
+    return { error: "Une erreur est survenue." };
+  }
 }
 
 // Action pour récupérer les statistiques utilisateur

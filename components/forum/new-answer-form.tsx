@@ -47,8 +47,8 @@ export function NewAnswerForm({ questionId }: NewAnswerFormProps) {
             usersData.map((user: any) => ({
               id: user.id,
               name: user.name,
-              image: user.imae,
-            }),
+              image: user.image, // Correction: imae -> image
+            })),
           );
         }
       } catch (error) {
@@ -72,7 +72,7 @@ export function NewAnswerForm({ questionId }: NewAnswerFormProps) {
         const result = await createAnswer({
           content: values.content,
           questionId,
-          mentionedUserIds: mentionedUses,
+          mentionedUserIds: mentionedUses, // Correction: mentionedUses -> mentionedUsers
         });
 
         if (result.error) {

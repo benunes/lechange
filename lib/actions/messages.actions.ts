@@ -34,7 +34,7 @@ export async function startOrGetConversation(listingId: string, sellerId: string
       data: {
         listingId,
         participants: {
-          create: [{ userId: buyerId }, { userId: sellerd }],
+          create: [{ userId: buyerId }, { userId: sellerId }],
         },
       },
     });

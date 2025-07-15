@@ -43,7 +43,16 @@ async function getUsers() {
     orderBy: { createdAt: "desc" },
   });
 
-  return users;
+  // Transformer les données pour convertir null en valeurs par défaut
+  return users.map((user) => ({
+    id: user.id,
+    name: user.name || "Utilisateur sans nom",
+    email: user.email || "Email non défini",
+    image: user.image || undefined,
+    role: user.role as string,
+    createdAt: user.createdAt,
+    _count: user._count,
+  }));
 }
 
 export default async function AdminUsersPage() {

@@ -44,7 +44,7 @@ const formSchema = z.object({
   title: z.string().min(1, "Le titre est requis."),
   content: z.string().min(1, "Le contenu est requis."),
   tags: z.string().optional(),
-  caegoryId: z.string().optional(),
+  categoryId: z.string().optional(), // Correction: caegoryId -> categoryId
 });
 
 type FormValues = z.infer<typeof formSchema>;

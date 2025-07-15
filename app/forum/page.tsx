@@ -50,7 +50,7 @@ async function getQuestions(categoryId?: string) {
 async function getForumStats() {
   const [questionsCount, answersCount] = await Promise.all([
     prisma.question.count(),
-    prisma.aswer.count(),
+    prisma.answer.count(), // Correction: aswer -> answer
   ]);
   return { questionsCount, answersCount };
 }

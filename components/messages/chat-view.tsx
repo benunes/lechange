@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Image from "next/image"; // Ajout de l'import manquant
 import {MessageForm} from "./message-form";
 import {Badge} from "@/components/ui/badge";
 import { CheckCheck, User, Wifi, WifiOff } from "lucide-react";

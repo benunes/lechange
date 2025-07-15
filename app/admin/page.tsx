@@ -94,9 +94,34 @@ async function getAdminStats() {
       pendingReports,
     },
     recent: {
-      users: recentUsers,
-      listings: recentListings,
-      questions: recentQuestions,
+      users: recentUsers.map((user) => ({
+        id: user.id,
+        name: user.name || "Utilisateur sans nom",
+        email: user.email || "Email non défini",
+        image: user.image || undefined,
+        role: user.role as string,
+        createdAt: user.createdAt,
+      })),
+      listings: recentListings.map((listing) => ({
+        id: listing.id,
+        title: listing.title,
+        category: listing.category.name, // Retourner seulement le nom de la catégorie
+        price: listing.price || undefined,
+        createdAt: listing.createdAt,
+        createdBy: {
+          name: listing.createdBy.name || "Utilisateur sans nom",
+        },
+      })),
+      questions: recentQuestions.map((question) => ({
+        id: question.id,
+        title: question.title,
+        tags: question.tags,
+        createdAt: question.createdAt,
+        author: {
+          name: question.author.name || "Utilisateur sans nom",
+        },
+        _count: question._count,
+      })),
     },
   };
 }

@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { auth } from "@/lib/auth";
@@ -103,7 +102,7 @@ export default async function MessagesPage() {
             <h3 className="text-xl font-semibold mb-2">Aucune conversation</h3>
             <p className="text-muted-foreground mb-6">
               Tes conversations apparaîtront ici quand tu contacteras un vendeur
-              ou qu'on te contactera !
+              ou qu&apos;on te contactera !
             </p>
           </div>
         ) : (

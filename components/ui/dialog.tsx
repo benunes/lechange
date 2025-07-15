@@ -38,7 +38,7 @@ function DialogTrigger({
   const { onOpenChange } = useDialog();
 
   if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children, {
+    return React.cloneElement(children as React.ReactElement<any>, {
       onClick: () => onOpenChange(true),
     });
   }

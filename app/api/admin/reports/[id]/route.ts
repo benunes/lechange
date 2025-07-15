@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth.api.getSession({
@@ -27,6 +27,7 @@ export async function PATCH(
     }
 
     const { status } = await request.json();
+    const { id } = await params; // Correction: await params
 
     // Valider le statut
     if (!["PENDING", "REVIEWED", "RESOLVED", "DISMISSED"].includes(status)) {
@@ -35,7 +36,7 @@ export async function PATCH(
 
     // Mettre à jour le statut du signalement
     await prisma.report.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         status,
         updatedAt: new Date(),

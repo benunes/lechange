@@ -66,6 +66,7 @@ export async function GET(request: NextRequest) {
           controller.close();
         } catch (e) {
           // Connexion déjà fermée
+          console.error("Erreur lors de la fermeture du stream SSE :", e);
         }
       };
 

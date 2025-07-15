@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth.api.getSession({
@@ -33,9 +33,11 @@ export async function PATCH(
       return NextResponse.json({ error: "Rôle invalide" }, { status: 400 });
     }
 
+    const { id } = await params; // Correction: await params
+
     // Mettre à jour le rôle de l'utilisateur
     await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: { role },
     });
 

@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { type: string; id: string } },
+  { params }: { params: Promise<{ type: string; id: string }> },
 ) {
   try {
     const session = await auth.api.getSession({
@@ -26,7 +26,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
     }
 
-    const { type, id } = params;
+    const { type, id } = await params; // Correction: await params
 
     // Supprimer le contenu selon le type
     switch (type.toLowerCase()) {

@@ -107,7 +107,7 @@ export function ModeratorDashboard({ stats }: ModeratorDashboardProps) {
               {stats.pendingReports}
             </div>
             <p className="text-xs text-muted-foreground">
-              +{stats.todayReports} aujourd'hui
+              +{stats.todayReports} aujourd&apos;hui
             </p>
           </CardContent>
         </Card>

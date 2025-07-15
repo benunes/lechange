@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth.api.getSession({
@@ -27,8 +27,9 @@ export async function POST(
     }
 
     // Suspendre l'utilisateur (ajouter un champ suspended à la DB ou supprimer temporairement)
+    const { id } = await params; // Correction: await params
     await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         // Vous pouvez ajouter un champ suspended: true dans votre schéma Prisma
         // Ou désactiver le compte d'une autre manière

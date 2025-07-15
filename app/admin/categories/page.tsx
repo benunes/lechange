@@ -25,27 +25,26 @@ async function checkAdminAccess() {
 }
 
 export default async function AdminCategoriesPage() {
-  await checkAdminAccess();
-  const categories = await getAllCategoriesForAdmin();
+  try {
+    await checkAdminAccess();
+    const categories = await getAllCategoriesForAdmin();
 
-  return (
-    <div className="container mx-auto py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-          Administration des Catégories
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Créez et gérez les catégories pour organiser les questions du forum
-        </p>
+    return (
+      <div className="container mx-auto py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            Administration des Catégories
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Créez et gérez les catégories pour organiser les questions du forum
+          </p>
+        </div>
+
+        <CategoriesManagement categories={categories} />
       </div>
-
-      <CategoriesManagement
-        categories={categories}
-        onUpdate={() => {
-          // Cette fonction sera appelée côté client pour recharger les données
-          window.location.reload();
-        }}
-      />
-    </div>
-  );
+    );
+  } catch (error) {
+    console.error("Erreur dans AdminCategoriesPage:", error);
+    redirect("/admin");
+  }
 }

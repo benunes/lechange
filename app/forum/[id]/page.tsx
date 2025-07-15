@@ -30,50 +30,50 @@ async function getQuestion(id: string) {
       author: {
         select: {
           name: true,
-          image: tru,
-        ,
+          image: true,
+        },
       },
       followers: {
         select: {
           userId: tru,
-        ,
+        },
       },
       answers: {
         include: {
           author: {
             select: {
               name: true,
-              image: tru,
-            ,
+              image: true,
+            },
           },
           votes: {
             select: {
               userId: true,
               isUpvote: tru,
-            ,
+            },
           },
           replies: {
             include: {
               author: {
                 select: {
                   name: true,
-                  image: tru,
-                ,
-              ,
+                  image: true,
+                },
+              },
             },
             orderBy: {
               createdAt: "asc,
-            ,
-          ,
+            },
+          },
         },
         where: {
-          parentId: nul, // Seulement les réponses principales
+          parentId: null // Seulement les réponses principales
         },
         orderBy: {
-          createdAt: "asc,
-        ,
-      ,
-    ,
+          createdAt: "asc"
+        },
+      },
+    },
   });
 }
 
@@ -82,18 +82,19 @@ async function getUsers() {
     select: {
       id: true,
       name: true,
-      image: tru,
-    ,
+      image: true
+    },
   });
 }
 
 export default async function QuestionPage({
   params
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>; // Correction: Promise<{ id: string }>
 }) {
   const session = await auth.api.getSession({ headers: await headers() });
-  const question = await getQuestion(params.id);
+  const { id } = await params; // Correction: await params
+  const question = await getQuestion(id);
   const users = await getUsers(); // Récupérer les utilisateurs pour les mentions
 
   if (!question) {
@@ -299,7 +300,7 @@ export default async function QuestionPage({
                                 day: "2-digit",
                                 month: "2-digit",
                                 year: "numeric"
-                              }
+                              },
                             )}
                           </span>
                           {isBest && (
@@ -331,7 +332,7 @@ export default async function QuestionPage({
                             userVote={
                               session
                                 ? (answer.votes.find(
-                                    (vote) => vote.userId === session.user.id
+                                  (vote) => vote.userId === session.user.id
                                   )?.isUpvote ?? null)
                                 : null
                             }

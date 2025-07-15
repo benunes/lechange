@@ -16,7 +16,6 @@ import {
   MessageCircle,
   HelpCircle,
   TrendingUp,
-  Star,
   Calendar,
 } from "lucide-react";
 
@@ -59,10 +58,11 @@ async function getUserProfile(userId: string) {
 export default async function UserProfilePage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>; // Correction: Promise<{ id: string }>
 }) {
   const session = await auth.api.getSession({ headers: await headers() });
-  const result = await getUserProfile(params.id);
+  const { id } = await params; // Correction: await params
+  const result = await getUserProfile(id);
 
   if (!result) {
     notFound();

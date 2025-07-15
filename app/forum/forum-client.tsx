@@ -105,7 +105,7 @@ export default function ForumClientPage({
 
   // Filtrage et tri des questions amélioré
   const filteredQuestions = useMemo(() => {
-    let filtered = initialQuestions.filter((question) => {
+    const filtered = initialQuestions.filter((question) => {
       const matchesSearch =
         question.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         question.content?.toLowerCase().includes(searchQuery.toLowerCase()) ||
