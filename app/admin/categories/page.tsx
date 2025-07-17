@@ -5,6 +5,9 @@ import { redirect } from "next/navigation";
 import { getAllCategoriesForAdmin } from "@/lib/actions/categories.actions";
 import { CategoriesManagement } from "@/components/admin/categories-management";
 
+// Force dynamic rendering for this page
+export const dynamic = "force-dynamic";
+
 async function checkAdminAccess() {
   const session = await auth.api.getSession({ headers: await headers() });
 
