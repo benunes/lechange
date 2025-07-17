@@ -67,7 +67,7 @@ async function getQuestion(id: string) {
           },
         },
         where: {
-          parentId: nul, // Seulement les réponses principales
+          parentId: null, // Seulement les réponses principales
         },
         orderBy: {
           createdAt: "asc",
