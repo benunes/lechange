@@ -20,17 +20,14 @@ export async function GET() {
     }
 
     const categories = await prisma.listingCategory.findMany({
-      orderBy: [
-        { parentId:"asc"' },
-        { order:"asc"' ,
-      ],
+      orderBy: [{ parentId: "asc" }, { order: "asc" }],
       include: {
         subcategories: {
-          orderBy: { order: "asc" }
+          orderBy: { order: "asc" },
         },
         _count: {
           select: {
-            listings: true
+            listings: true,
           },
         },
       },
@@ -41,7 +38,7 @@ export async function GET() {
     console.error("Erreur lors de la récupération des catégories:", error);
     return NextResponse.json(
       { error: "Erreur lors de la récupération des catégories" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -55,7 +52,7 @@ export async function POST(request: Request) {
     }
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { role: true }
+      select: { role: true },
     });
 
     if (!user || user.role !== "ADMIN") {
@@ -66,26 +63,27 @@ export async function POST(request: Request) {
     const { name, description, icon, color, parentId } = data;
 
     // Générer le slug
-    const slug = name.toLowerCase()
+    const slug = name
+      .toLowerCase()
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9-]/g, "");
 
     // Vérifier l'unicité du slug
     const existing = await prisma.listingCategory.findFirst({
-      where: { slug }
+      where: { slug },
     });
 
     if (existing) {
       return NextResponse.json(
         { error: "Une catégorie avec ce nom existe déjà" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Obtenir l'ordre suivant
     const lastCategory = await prisma.listingCategory.findFirst({
       where: { parentId: parentId || null },
-      orderBy: { order: "desc" }
+      orderBy: { order: "desc" },
     });
 
     const order = lastCategory ? lastCategory.order + 1 : 0;
@@ -99,8 +97,8 @@ export async function POST(request: Request) {
         slug,
         parentId: parentId || null,
         order,
-        createdById: session.user.id
-      }
+        createdById: session.user.id,
+      },
     });
 
     return NextResponse.json(category);
@@ -108,7 +106,7 @@ export async function POST(request: Request) {
     console.error("Erreur lors de la création de la catégorie:", error);
     return NextResponse.json(
       { error: "Erreur lors de la création de la catégorie" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

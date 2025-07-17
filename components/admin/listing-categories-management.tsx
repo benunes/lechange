@@ -1,8 +1,29 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { Edit2, Eye, EyeOff, FolderOpen, Package, Plus } from "lucide-react";
 
 interface ListingCategory {
   id: string;
@@ -141,7 +162,7 @@ export function ListingCategoriesManagement({
 
         if (response.ok) {
           toast.success(
-            editingCategory ? "Catégorie modifiée !" : "Catégorie créé",
+            editingCategory ? "Catégorie modifiée !" : "Catégorie créée",
           );
           setIsDialogOpen(false);
           resetForm();
@@ -176,12 +197,12 @@ export function ListingCategoriesManagement({
           {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ isActive: !category.isActive },
-          ,
+            body: JSON.stringify({ isActive: !category.isActive }),
+          },
         );
         if (response.ok) {
           toast.success(
-            `Catégorie ${category.isActive ? "désactivée" : "activée"} !,
+            `Catégorie ${category.isActive ? "désactivée" : "activée"} !`,
           );
           router.refresh();
         } else {
