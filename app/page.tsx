@@ -1,4 +1,4 @@
-import {Button} from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -7,23 +7,30 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
-import {ArrowRight, Filter, Heart, MessageCircle, Plus, Search, Sparkles, TrendingUp, Users, Zap,} from "lucide-react";
+import {
+  ArrowRight,
+  Filter,
+  Heart,
+  MessageCircle,
+  Plus,
+  Search,
+  Sparkles,
+  TrendingUp,
+  Users,
+  Zap,
+} from "lucide-react";
 
 async function getListings() {
+  // Récupérer les annonces récentes
   const listings = await prisma.listing.findMany({
-    take: 8, // Limiter à 8 pour une mise en page plus propre
-    orderBy: {
-      createdAt: "desc",
-    },
+    take: 6,
+    orderBy: { createdAt: "desc" },
     include: {
       category: {
         select: {
-          id: true,
           name: true,
           icon: true,
           color: true,
@@ -39,7 +46,7 @@ async function getStats() {
     prisma.listing.count(),
     prisma.user.count(),
   ]);
-  return {listingsCount, usersCount};
+  return { listingsCount, usersCount };
 }
 
 export default async function Home() {

@@ -15,12 +15,12 @@ import { UploadButton } from "@/components/uploadthing";
 import { createListing } from "@/lib/actions/listings.actions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useState, useTransition, useEffect } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 import { Badge } from "@/components/ui/badge";
-import { X, ImageIcon } from "lucide-react";
+import { X } from "lucide-react";
 import Image from "next/image";
 
 const formSchema = z.object({
@@ -47,13 +47,14 @@ const CONDITIONS = [
   { value: "neuf", label: "Neuf" },
   { value: "tres-bon", label: "Très bon état" },
   { value: "bon", label: "Bon état" },
-  { value: "correct", label: "État correct" ,
+  { value: "correct", label: "État correct" },
 ];
 
 export function NewListingForm() {
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [categories, setCategories] = useState<ListingCategory[]>([]);
-  const [selectedParentCategory, setSelectedParentCategory] = useState<string>("");
+  const [selectedParentCategory, setSelectedParentCategory] =
+    useState<string>("");
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -65,15 +66,15 @@ export function NewListingForm() {
       categoryId: "",
       condition: "",
       location: "",
-      price: ""
-    }
+      price: "",
+    },
   });
 
   // Charger les catégories au montage du composant
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch("/api/admin/listing-categories");
+        const response = await fetch("/api/listing-categories");
         if (response.ok) {
           const data = await response.json();
 
@@ -82,7 +83,9 @@ export function NewListingForm() {
             .filter((cat: ListingCategory) => !cat.parentId)
             .map((parent: ListingCategory) => ({
               ...parent,
-              subcategories: data.filter((cat: ListingCategory) => cat.parentId === parent.id)
+              subcategories: data.filter(
+                (cat: ListingCategory) => cat.parentId === parent.id,
+              ),
             }));
 
           setCategories(parentCategories);
@@ -106,7 +109,7 @@ export function NewListingForm() {
       const listingData = {
         ...values,
         images: imageUrls,
-        price: values.price || undefined // Garder comme string au lieu de convertir en number
+        price: values.price || undefd, // Garder comme string au lieu de convertir en number
       };
 
       createListing(listingData).then((data) => {
@@ -122,12 +125,13 @@ export function NewListingForm() {
   };
 
   const removeImage = (indexToRemove: number) => {
-    setImageUrls(prev => prev.filter((_, index) => index !== indexToRemove));
+    setImageUrls((prev) => prev.filter((_, index) => index !== indexToRemove));
   };
 
   // Obtenir les sous-catégories de la catégorie parent sélectionnée
   const availableSubcategories = selectedParentCategory
-    ? categories.find(cat => cat.id === selectedParentCategory)?.subcategories || []
+    ? categories.find((cat) => cat.id === selectedParentCategory)
+        ?.subcategories || []
     : [];
 
   // Réinitialiser la sous-catégorie quand on change de catégorie parent
@@ -179,8 +183,13 @@ export function NewListingForm() {
         {/* Catégories */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label className="text-base font-medium">Catégorie principale *</Label>
-            <Select value={selectedParentCategory} onValueChange={handleParentCategoryChange}>
+            <Label className="text-base font-medium">
+              Catégorie principale *
+            </Label>
+            <Select
+              value={selectedParentCategory}
+              onValueChange={handleParentCategoryChange}
+            >
               <SelectTrigger className="mt-2">
                 <SelectValue placeholder="Choisir une catégorie..." />
               </SelectTrigger>
@@ -208,11 +217,13 @@ export function NewListingForm() {
               disabled={!selectedParentCategory}
             >
               <SelectTrigger className="mt-2">
-                <SelectValue placeholder={
-                  selectedParentCategory
-                    ? "Choisir une sous-catégorie..."
-                    : "Sélectionnez d'abord une catégorie"
-                } />
+                <SelectValue
+                  placeholder={
+                    selectedParentCategory
+                      ? "Choisir une sous-catégorie..."
+                      : "Sélectionnez d'abord une catégorie"
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
                 {availableSubcategories.map((subcategory) => (
@@ -321,8 +332,7 @@ export function NewListingForm() {
           )}
 
           {/* Bouton d'upload */}
-          <div
-            className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
             <UploadButton
               endpoint="listingImage"
               onClientUploadComplete={(res) => {
@@ -337,7 +347,7 @@ export function NewListingForm() {
               }}
               appearance={{
                 button: "bg-purple-600 hover:bg-purple-700",
-                allowedContent: "text-sm text-muted-foreground"
+                allowedContent: "text-sm text-muted-foreground",
               }}
             />
           </div>

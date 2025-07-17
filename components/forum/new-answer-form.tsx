@@ -5,10 +5,10 @@ import { MentionInput } from "@/components/forum/mention-input";
 import { createAnswer } from "@/lib/actions/forum.actions";
 import { getMentionedUserIds, MentionUser } from "@/lib/utils/mentions";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition, useState, useEffect } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Send, Loader2, Users } from "lucide-react";
+import { Loader2, Send, Users } from "lucide-react";
 import * as z from "zod";
 
 const formSchema = z.object({
@@ -72,7 +72,7 @@ export function NewAnswerForm({ questionId }: NewAnswerFormProps) {
         const result = await createAnswer({
           content: values.content,
           questionId,
-          mentionedUserIds: mentionedUses, // Correction: mentionedUses -> mentionedUsers
+          mentionedUserIds: mentionedUsers, // Correction: mentionedUses -> mentionedUsers
         });
 
         if (result.error) {

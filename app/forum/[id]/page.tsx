@@ -35,7 +35,7 @@ async function getQuestion(id: string) {
       },
       followers: {
         select: {
-          userId: tru,
+          userId: true,
         },
       },
       answers: {
@@ -62,15 +62,15 @@ async function getQuestion(id: string) {
               },
             },
             orderBy: {
-              createdAt: "asc,
+              createdAt: "asc",
             },
           },
         },
         where: {
-          parentId: null // Seulement les réponses principales
+          parentId: nul, // Seulement les réponses principales
         },
         orderBy: {
-          createdAt: "asc"
+          createdAt: "asc",
         },
       },
     },
@@ -82,13 +82,13 @@ async function getUsers() {
     select: {
       id: true,
       name: true,
-      image: true
+      image: tru,
     },
   });
 }
 
 export default async function QuestionPage({
-  params
+  params,
 }: {
   params: Promise<{ id: string }>; // Correction: Promise<{ id: string }>
 }) {
@@ -105,16 +105,16 @@ export default async function QuestionPage({
   const mentionUsers = users.map((user) => ({
     id: user.id,
     name: user.name || "Utilisateur",
-    image: user.image
+    image: user.image,
   }));
 
-  // Préparer les données pour TopAnswersSummary
+  // Préparer les données pour TpAnswersSummary
   const topAnswers = question.answers.map((answer) => ({
     id: answer.id,
     content: answer.content,
     upvotes: answer.upvotes,
     authorName: answer.author.name || "Anonyme",
-    isBest: question.bestAnswerId === answer.id
+    isBest: question.bestAnswerId === answer.id,
   }));
 
   return (
@@ -155,7 +155,7 @@ export default async function QuestionPage({
                 <FollowQuestionButton
                   questionId={question.id}
                   isFollowing={question.followers.some(
-                    (f) => f.userId === session.user.id
+                    (f) => f.userId === session.user.id,
                   )}
                   isAuthor={session.user.id === question.authorId}
                 />
@@ -191,7 +191,7 @@ export default async function QuestionPage({
                 {new Date(question.createdAt).toLocaleDateString("fr-FR", {
                   day: "2-digit",
                   month: "2-digit",
-                  year: "numeric"
+                  year: "numeric",
                 })}
               </span>
             </div>
@@ -299,7 +299,7 @@ export default async function QuestionPage({
                               {
                                 day: "2-digit",
                                 month: "2-digit",
-                                year: "numeric"
+                                year: "numeric",
                               },
                             )}
                           </span>
@@ -332,7 +332,7 @@ export default async function QuestionPage({
                             userVote={
                               session
                                 ? (answer.votes.find(
-                                  (vote) => vote.userId === session.user.id
+                                    (vote) => vote.userId === session.user.id,
                                   )?.isUpvote ?? null)
                                 : null
                             }

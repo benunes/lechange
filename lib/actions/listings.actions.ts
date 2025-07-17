@@ -16,41 +16,42 @@ const listingSchema = z.object({
   location: z.string().optional(),
 });
 
-eport async function createListing(values: z.infer<typeof listingSchema>) {
+export async function createListing(values: z.infer<typeof listingSchema>) {
   const session = await auth.api.getSession({ headers: await headers() });
 
-    if (!session) {
-      return { error: "Non autorisé. Vous devez être connecté." };
-    }
+  if (!session) {
+    return { error: "Non autorisé. Vous devez être connecté." };
+  }
 
-    const validatedFields = listingSchema.safeParse(values);
+  const validatedFields = listingSchema.safeParse(values);
 
-    if (!validatedFields.success) {
-      return { error: "Champs invalides." };
-    }
+  if (!validatedFields.success) {
+    return { error: "Champs invalides." };
+  }
 
-  const { title, description, categoryId, price, images, condition, location } = validatedFields.data;
+  const { title, description, categoryId, price, images, condition, location } =
+    validatedFields.data;
 
-    try {
-        await prisma.listing.create({
-            data: {
-                title,
-                description,
-              categoryId, // Utiliser categoryId au lieu de category
-                price: price ? parseFloat(price) : null,
-                images: images || [],
-              condition,
-              location,
-                createdById: session.user.id,
-            },
-        });
+  try {
+    await prisma.listing.create({
+      data: {
+        title,
+        description,
+        categoryId, // Utiliser categoryId au lieu de category
+        price: price ? parseFloat(price) : null,
+        images: images || [],
+        condition,
+        location,
+        createdById: session.user.id,
+      },
+    });
 
-        revalidatePath("/");
-      return { success: "Annonce créée avec succès !" };
-    } catch (error) {
-        console.error(error);
-        return {
-            error: "Une erreur est survenue lors de la création de l'annonce.",
-        };
-    }
+    revalidatePath("/");
+    return { success: "Annonce créée avec succès !" };
+  } catch (error) {
+    console.error(error);
+    return {
+      error: "Une erreur est survenue lors de la création de l'ann",
+    };
+  }
 }

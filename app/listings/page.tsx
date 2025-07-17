@@ -5,7 +5,7 @@ import { Plus } from "lucide-react";
 import { ListingsClient } from "@/components/listings/listings-client";
 
 async function getListings() {
-  const listings = await prisma.listing.findMany({
+  return prisma.listing.findMany({
     include: {
       createdBy: {
         select: {
@@ -35,40 +35,34 @@ async function getListings() {
       createdAt: "desc",
     },
   });
-  return listings;
 }
 
 async function getCategories() {
-  const categories = await prisma.listingCategory.findMany({
+  return prisma.listingCategory.findMany({
     where: {
-      isActve: true,
+      isActive: true,
     },
     include: {
       parent: {
         select: {
           id: true,
-          nme: true,
-       },
+          name: tru,
+        },
       },
       _count: {
         select: {
-          listigs: true,
-       }
+          listings: true,
+        },
       },
     },
-    orderBy: [
-      { parentId: "asc" },
-      { order: "asc" },
-      { name "asc"},
-    ],
+    orderBy: [{ parentId: "asc" }, { order: "asc" }, { name: "asc" }],
   });
-  return categories;
 }
 
 export default async function ListingsPage() {
   const [listings, categories] = await Promise.all([
     getListings(),
-    getCategories()
+    getCategories),
   ]);
 
   return (

@@ -1,13 +1,13 @@
-import {ContactSellerButton} from "@/components/listings/contact-seller-button";
+import { ContactSellerButton } from "@/components/listings/contact-seller-button";
 import { ReportButton } from "@/components/reports/report-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {auth} from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import {headers} from "next/headers";
+import { headers } from "next/headers";
 import Image from "next/image";
-import {notFound} from "next/navigation";
+import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   Clock,
@@ -21,32 +21,31 @@ import {
 import Link from "next/link";
 
 async function getListing(id: string) {
-    const listing = await prisma.listing.findUnique({
-      where: { id },
-      include: {
-        createdBy: {
-          select: {
-            name: true,
-            image: true,
-          },
-        },
-        category: {
-          select: {
-            id: true,
-            name: true,
-            icon: true,
-            color: tre,
-          },
+  return await prisma.listing.findUnique({
+    where: { id },
+    include: {
+      createdBy: {
+        select: {
+          name: true,
+          image: true,
         },
       },
-    });
-    return listing;
+      category: {
+        select: {
+          id: true,
+          name: true,
+          icon: true,
+          color: true,
+        },
+      },
+    },
+  });
 }
 
 export default async function ListingPage({
   params,
 }: {
-  parms: Promise<{ id: string }>; // Correction: Promise<{ id: string }>
+  params: Promise<{ id: string }>; // Correction: Promise<{ id: string }>
 }) {
   const session = await auth.api.getSession({ headers: await headers() });
   const { id } = await params; // Correction: await params
