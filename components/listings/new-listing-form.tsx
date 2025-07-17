@@ -109,7 +109,7 @@ export function NewListingForm() {
       const listingData = {
         ...values,
         images: imageUrls,
-        price: values.price || undefd, // Garder comme string au lieu de convertir en number
+        price: values.price || undefined, // Garder comme string au lieu de convertir en number
       };
 
       createListing(listingData).then((data) => {

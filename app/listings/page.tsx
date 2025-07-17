@@ -46,7 +46,7 @@ async function getCategories() {
       parent: {
         select: {
           id: true,
-          name: tru,
+          name: true,
         },
       },
       _count: {
@@ -62,7 +62,7 @@ async function getCategories() {
 export default async function ListingsPage() {
   const [listings, categories] = await Promise.all([
     getListings(),
-    getCategories),
+    getCategories(,
   ]);
 
   return (
