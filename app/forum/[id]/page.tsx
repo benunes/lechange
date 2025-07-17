@@ -24,7 +24,7 @@ import { FollowQuestionButton } from "@/components/forum/follow-question-button"
 import { TopAnswersSummary } from "@/components/forum/top-answers-summary";
 
 async function getQuestion(id: string) {
-  return await prisma.question.findUnique({
+  return prisma.question.findUnique({
     where: { id },
     include: {
       author: {
@@ -49,7 +49,7 @@ async function getQuestion(id: string) {
           votes: {
             select: {
               userId: true,
-              isUpvote: tru,
+              isUpvote: true,
             },
           },
           replies: {
@@ -78,11 +78,11 @@ async function getQuestion(id: string) {
 }
 
 async function getUsers() {
-  return await prisma.user.findMany({
+  return prisma.user.findMany({
     select: {
       id: true,
       name: true,
-      image: tru,
+      image: true,
     },
   });
 }

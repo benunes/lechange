@@ -56,12 +56,6 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const session = await auth.api.getSession({ headers: await headers() });
-
-    if (!session?.user || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-    }
-
     const data = await request.json();
     const { isActive } = data;
 
@@ -87,10 +81,6 @@ export async function DELETE(
   try {
     const { id } = await params;
     const session = await auth.api.getSession({ headers: await headers() });
-
-    if (!session?.user || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-    }
 
     // Vérifier s'il y a des annonces liées
     const listingsCount = await prisma.listing.count({
