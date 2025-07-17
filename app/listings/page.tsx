@@ -62,14 +62,13 @@ async function getCategories() {
 export default async function ListingsPage() {
   const [listings, categories] = await Promise.all([
     getListings(),
-    getCategories(,
+    getCategories(),
   ]);
 
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <div
-        className="bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-orange-950/20 py-12 mb-8">
+      <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-orange-950/20 py-12 mb-8">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div>
