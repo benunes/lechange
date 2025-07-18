@@ -4,15 +4,10 @@ import { withRoleCheck } from "@/lib/middleware/role-middleware";
 import { z } from "zod";
 
 const roleUpdateSchema = z.object({
-  role: z.enum(["USER", "MODERATOR", "ADMIN"])
+  role: z.enum(["USER", "MODERATOR", "ADMIN"]),
 });
 
-async function updateUserRole(
-  request: NextRequest,
-  currentUser: any,
-  { params }: {
-    params: { id: string },
-) {
+async function updateUserRole(request: NextRequest, currentUser: any, { params }: { params: { id: string } }) {
   try {
     const { id } = await params;
     const body = await request.json();
@@ -29,7 +24,7 @@ async function updateUserRole(
     // Vérifier que l'utilisateur existe
     const targetUser = await prisma.user.findUnique({
       where: { id },
-      select: { id: true, name: true, role: true }
+      select: { id: true, name: true, role: true },
     });
 
     if (!targetUser) {
@@ -43,7 +38,7 @@ async function updateUserRole(
     const updatedUser = await prisma.user.update({
       where: { id },
       data: { role },
-      select: { id: true, name: true, role: true }
+      select: { id: true, name: true, role: true },
     });
 
     // Log de l'action admin
@@ -53,14 +48,14 @@ async function updateUserRole(
         action: "UPDATE_USER_ROLE",
         details: `Changement du rôle de ${targetUser.name} (${id}) de ${targetUser.role} vers ${role}`,
         targetId: id,
-        targetType: "USER"
-      }
+        targetType: "USER",
+      },
     });
 
     return NextResponse.json({
       success: true,
       message: "Rôle mis à jour avec succès",
-      user: updatedUser
+      user: updatedUser,
     });
   } catch (error) {
     console.error("Erreur lors de la mise à jour du rôle:", error);

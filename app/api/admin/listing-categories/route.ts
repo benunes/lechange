@@ -8,7 +8,7 @@ const createCategorySchema = z.object({
   description: z.string().optional(),
   icon: z.string().min(1, "L'icône est requise"),
   color: z.string().min(1, "La couleur est requise"),
-  parentId: z.string().nullable().optional()
+  parentId: z.string().nullable().optional(),
 });
 
 async function getCategories() {
@@ -20,9 +20,9 @@ async function getCategories() {
           orderBy: { order: "asc" },
           include: {
             _count: {
-              select: { listings: true
-
-
+              select: { listings: true },
+            },
+          },
         },
         _count: {
           select: {
@@ -42,11 +42,11 @@ async function getCategories() {
   }
 }
 
-    async function createCategory(request: NextRequest, currentUser: any) {
+async function createCategory(request: NextRequest, currentUser: any) {
   try {
     const body = await request.json();
     const { name, description, icon, color, parentId } = createCategorySchema.parse(
-      body
+      body,
     );
 
     // Générer un slug unique
@@ -69,7 +69,7 @@ async function getCategories() {
     const maxOrder = await prisma.listingCategory.findFirst({
       where: { parentId: parentId || null },
       orderBy: { order: "desc" },
-      select: { order: true }
+      select: { order: true },
     });
 
     const order = (maxOrder?.order || 0) + 1;
@@ -83,14 +83,14 @@ async function getCategories() {
         slug,
         parentId: parentId || null,
         order,
-        createdById: currentUser.id
+        createdById: currentUser.id,
       },
       include: {
         subcategories: true,
         _count: {
-          select: { listings: true }
-        }
-      }
+          select: { listings: true },
+        },
+      },
     });
 
     // Log de l'action admin
@@ -100,14 +100,14 @@ async function getCategories() {
         action: "CREATE_LISTING_CATEGORY",
         details: `Création de la catégorie d'annonce: ${name}`,
         targetId: category.id,
-        targetType: "LISTING_CATEGORY"
+        targetType: "LISTING_CATEGORY",
       },
     });
 
     return NextResponse.json({
       success: true,
       message: "Catégorie créée avec succès",
-      category
+      category,
     });
   } catch (error) {
     console.error("Erreur lors de la création de la catégorie:", error);
@@ -115,7 +115,7 @@ async function getCategories() {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Données invalides", details: error.issues },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -127,7 +127,7 @@ async function getCategories() {
 }
 
 // GET route - accessible aux admins seulement
-    export const GET = withRoleCheck("ADMIN", getCategories);
+export const GET = withRoleCheck("ADMIN", getCategories);
 
 // POST route - accessible aux admins seulement
-    export const POST = withRoleCheck("ADMIN", createCategory);
+export const POST = withRoleCheck("ADMIN", createCategory);

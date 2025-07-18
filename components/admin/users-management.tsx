@@ -8,7 +8,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { useUserRole } from "@/lib/hooks/use-user-role";
 import { toast } from "sonner";
-import { Activity, Ban, Calendar, Edit, Mail, MoreHorizontal, Search, Shield, UserCheck } from "lucide-react";
+import {
+  Activity,
+  Ban,
+  Calendar,
+  Edit,
+  Mail,
+  MoreHorizontal,
+  Search,
+  Shield,
+  UserCheck,
+} from "lucide-react";
 import Link from "next/link";
 import {
   DropdownMenu,
@@ -16,9 +26,15 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface User {
   id: string;
@@ -93,7 +109,7 @@ export function UsersManagement({ users, stats }: UsersManagementProps) {
   const handleSuspendUser = async (userId: string, suspend: boolean) => {
     if (!isAdmin) {
       toast.error(
-        "Vous n'avez pas les permissions pour suspendre des utilisateurs"
+        "Vous n'avez pas les permissions pour suspendre des utilisateurs",
       );
       return;
     }
@@ -108,7 +124,7 @@ export function UsersManagement({ users, stats }: UsersManagementProps) {
       const response = await fetch(`/api/admin/users/${userId}/suspend`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ suspend }
+        body: JSON.stringify({ suspend }),
       });
 
       if (response.ok) {

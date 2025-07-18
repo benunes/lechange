@@ -4,14 +4,10 @@ import { withRoleCheck } from "@/lib/middleware/role-middleware";
 import { z } from "zod";
 
 const suspendSchema = z.object({
-  suspend: z.boolean()
+  suspend: z.boolean(),
 });
 
-async function toggleUserSuspension(
-  request: NextRequest,
-  currentUser: any,
-  { params }: { params: { id: string } }
-) {
+async function toggleUserSuspension(request: NextRequest, currentUser: any, { params }: { params: { id: string } }) {
   try {
     const { id } = await params;
     const body = await request.json();
@@ -28,7 +24,7 @@ async function toggleUserSuspension(
     // Vérifier que l'utilisateur existe
     const targetUser = await prisma.user.findUnique({
       where: { id },
-      select: { id: true, name: true, role: true }
+      select: { id: true, name: true, role: true },
     });
 
     if (!targetUser) {
@@ -51,7 +47,7 @@ async function toggleUserSuspension(
     const updatedUser = await prisma.user.update({
       where: { id },
       data: { role: newRole },
-      select: { id: true, name: true, role: true }
+      select: { id: true, name: true, role: true },
     });
 
     // Log de l'action admin
@@ -61,14 +57,14 @@ async function toggleUserSuspension(
         action: suspend ? "SUSPEND_USER" : "UNSUSPEND_USER",
         details: `${suspend ? "Suspension" : "Levée de suspension"} de ${targetUser.name} (${id})`,
         targetId: id,
-        targetType: "UER"
+        targetType: "USER",
       },
     });
 
     return NextResponse.json({
       success: true,
       message: suspend ? "Utilisateur suspendu" : "Suspension levée",
-      user: updatedUser
+      user: updatedUser,
     });
   } catch (error) {
     console.error("Erreur lors de la modification de suspension:", error);
@@ -76,15 +72,15 @@ async function toggleUserSuspension(
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Données invalides", details: error.issues },
-        { status: 400
+        { status: 400 }
       );
     }
 
-      return NextResponse.json(
-        { error: "Erreur interne du serveur" },
-        { status: 500
-      );
-    }
-    }
+    return NextResponse.json(
+      { error: "Erreur interne du serveur" },
+      { status: 500 }
+    );
+  }
+}
 
-    export const PATCH = withRoleCheck("ADMIN", toggleUserSuspension);
+export const PATCH = withRoleCheck("ADMIN", toggleUserSuspension);
