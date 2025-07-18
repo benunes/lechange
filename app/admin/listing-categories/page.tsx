@@ -18,7 +18,7 @@ async function getListingCategories() {
         },
       },
       _count: {
-        select: { listings: true ,
+        select: { listings: true },
       },
     },
   });
