@@ -1,29 +1,28 @@
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { headers } from "next/headers";
-import { NextResponse } from "next/server";
+import { withRoleCheck } from "@/lib/middleware/role-middleware";
+import { z } from "zod";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
+const createCategorySchema = z.object({
+  name: z.string().min(1, "Le nom est requis"),
+  description: z.string().optional(),
+  icon: z.string().min(1, "L'icône est requise"),
+  color: z.string().min(1, "La couleur est requise"),
+  parentId: z.string().nullable().optional()
+});
+
+async function getCategories() {
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
-
-    if (!session) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-    }
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true },
-    });
-
-    if (!user || user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-    }
-
     const categories = await prisma.listingCategory.findMany({
       orderBy: [{ parentId: "asc" }, { order: "asc" }],
       include: {
         subcategories: {
           orderBy: { order: "asc" },
+          include: {
+            _count: {
+              select: { listings: true
+
+
         },
         _count: {
           select: {
@@ -43,70 +42,92 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+    async function createCategory(request: NextRequest, currentUser: any) {
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const body = await request.json();
+    const { name, description, icon, color, parentId } = createCategorySchema.parse(
+      body
+    );
 
-    if (!session) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-    }
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true },
-    });
-
-    if (!user || user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-    }
-
-    const data = await request.json();
-    const { name, description, icon, color, parentId } = data;
-
-    // Générer le slug
-    const slug = name
+    // Générer un slug unique
+    const baseSlug = name
       .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9-]/g, "");
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
 
-    // Vérifier l'unicité du slug
-    const existing = await prisma.listingCategory.findFirst({
-      where: { slug },
-    });
+    let slug = baseSlug;
+    let counter = 1;
 
-    if (existing) {
-      return NextResponse.json(
-        { error: "Une catégorie avec ce nom existe déjà" },
-        { status: 400 },
-      );
+    while (await prisma.listingCategory.findUnique({ where: { slug } })) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
     }
 
-    // Obtenir l'ordre suivant
-    const lastCategory = await prisma.listingCategory.findFirst({
+    // Déterminer l'ordre
+    const maxOrder = await prisma.listingCategory.findFirst({
       where: { parentId: parentId || null },
       orderBy: { order: "desc" },
+      select: { order: true }
     });
 
-    const order = lastCategory ? lastCategory.order + 1 : 0;
+    const order = (maxOrder?.order || 0) + 1;
 
     const category = await prisma.listingCategory.create({
       data: {
         name,
-        description,
+        description: description || null,
         icon,
         color,
         slug,
         parentId: parentId || null,
         order,
-        createdById: session.user.id,
+        createdById: currentUser.id
+      },
+      include: {
+        subcategories: true,
+        _count: {
+          select: { listings: true }
+        }
+      }
+    });
+
+    // Log de l'action admin
+    await prisma.adminLog.create({
+      data: {
+        adminId: currentUser.id,
+        action: "CREATE_LISTING_CATEGORY",
+        details: `Création de la catégorie d'annonce: ${name}`,
+        targetId: category.id,
+        targetType: "LISTING_CATEGORY"
       },
     });
 
-    return NextResponse.json(category);
+    return NextResponse.json({
+      success: true,
+      message: "Catégorie créée avec succès",
+      category
+    });
   } catch (error) {
     console.error("Erreur lors de la création de la catégorie:", error);
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Données invalides", details: error.issues },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
-      { error: "Erreur lors de la création de la catégorie" },
+      { error: "Erreur interne du serveur" },
       { status: 500 },
     );
   }
 }
+
+// GET route - accessible aux admins seulement
+    export const GET = withRoleCheck("ADMIN", getCategories);
+
+// POST route - accessible aux admins seulement
+    export const POST = withRoleCheck("ADMIN", createCategory);

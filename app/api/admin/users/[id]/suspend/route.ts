@@ -1,45 +1,90 @@
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/db";
-import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { withRoleCheck } from "@/lib/middleware/role-middleware";
+import { z } from "zod";
 
-export async function POST(
+const suspendSchema = z.object({
+  suspend: z.boolean()
+});
+
+async function toggleUserSuspension(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  currentUser: any,
+  { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const { id } = await params;
+    const body = await request.json();
+    const { suspend } = suspendSchema.parse(body);
 
-    if (!session) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    // Empêcher la suspension de soi-même
+    if (id === currentUser.id) {
+      return NextResponse.json(
+        { error: "Vous ne pouvez pas vous suspendre vous-même" },
+        { status: 400 }
+      );
     }
 
-    // Vérifier que l'utilisateur est admin ou modérateur
-    const admin = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true },
-    });
-
-    if (!["ADMIN", "MODERATOR"].includes(admin?.role || "")) {
-      return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
-    }
-
-    // Suspendre l'utilisateur (ajouter un champ suspended à la DB ou supprimer temporairement)
-    const { id } = await params; // Correction: await params
-    await prisma.user.update({
+    // Vérifier que l'utilisateur existe
+    const targetUser = await prisma.user.findUnique({
       where: { id },
+      select: { id: true, name: true, role: true }
+    });
+
+    if (!targetUser) {
+      return NextResponse.json(
+        { error: "Utilisateur non trouvé" },
+        { status: 404 }
+      );
+    }
+
+    // Empêcher la suspension d'autres admins
+    if (targetUser.role === "ADMIN") {
+      return NextResponse.json(
+        { error: "Impossible de suspendre un administrateur" },
+        { status: 403 }
+      );
+    }
+
+    // Mettre à jour le statut
+    const newRole = suspend ? "SUSPENDED" : "USER";
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: { role: newRole },
+      select: { id: true, name: true, role: true }
+    });
+
+    // Log de l'action admin
+    await prisma.adminLog.create({
       data: {
-        // Vous pouvez ajouter un champ suspended: true dans votre schéma Prisma
-        // Ou désactiver le compte d'une autre manière
-        role: "SUSPENDED", // Temporaire, idéalement avoir un champ suspended
+        adminId: currentUser.id,
+        action: suspend ? "SUSPEND_USER" : "UNSUSPEND_USER",
+        details: `${suspend ? "Suspension" : "Levée de suspension"} de ${targetUser.name} (${id})`,
+        targetId: id,
+        targetType: "UER"
       },
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      message: suspend ? "Utilisateur suspendu" : "Suspension levée",
+      user: updatedUser
+    });
   } catch (error) {
-    console.error("Erreur lors de la suspension:", error);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
-  }
-}
+    console.error("Erreur lors de la modification de suspension:", error);
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Données invalides", details: error.issues },
+        { status: 400
+      );
+    }
+
+      return NextResponse.json(
+        { error: "Erreur interne du serveur" },
+        { status: 500
+      );
+    }
+    }
+
+    export const PATCH = withRoleCheck("ADMIN", toggleUserSuspension);

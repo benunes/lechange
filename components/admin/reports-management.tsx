@@ -1,437 +1,375 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  ArrowLeft,
-  Search,
-  Filter,
-  AlertTriangle,
-  Eye,
-  Check,
-  X,
-  Ban,
-  Flag,
-  Clock,
-  User,
-  Package,
-  MessageSquare,
-  HelpCircle,
-} from "lucide-react";
-import Link from "next/link";
+import { useUserRole } from "@/lib/hooks/use-user-role";
 import { toast } from "sonner";
+import { MessageSquare, Package } from "lucide-react";
 
-interface ReportsManagementProps {
-  reports: any[];
+interface Report {
+  id: string;
+  type: string;
+  details: string | null;
+  status: string;
+  createdAt: Date;
+  user: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    image: string | null;
+  };
+  listing?: {
+    id: string;
+    title: string;
+  } | null;
+  question?: {
+    id: string;
+    title: string;
+  } | null;
+  answer?: {
+    id: string;
+    content: string;
+    question: {
+      id: string;
+      title: string;
+    };
+  } | null;
 }
 
-export function ReportsManagement({ reports }: ReportsManagementProps) {
-  const [searchTerm, setSearchTerm] = useState("");
+interface ReportsManagementProps {
+  reports: Report[];
+  stats: {
+    totalReports: number;
+    pendingReports: number;
+    resolvedReports: number;
+    todayReports: number;
+  };
+}
+
+export function ReportsManagement({ reports, stats }: ReportsManagementProps) {
+  const { isModerator, isAdmin } = useUserRole();
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [typeFilter, setTypeFilter] = useState("ALL");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const getReportTypeLabel = (type: string) => {
-    const types: Record<string, string> = {
-      INAPPROPRIATE_CONTENT: "Contenu inapproprié",
-      SPAM: "Spam",
-      HARASSMENT: "Harcèlement",
-      FAKE_LISTING: "Fausse annonce",
-      SCAM: "Arnaque",
-      COPYRIGHT: "Droits d'auteur",
-      OTHER: "Autre",
-    };
-    return types[type] || type;
+  const filteredReports = reports.filter((report) => {
+    const matchesStatus =
+      statusFilter === "ALL" || report.status === statusFilter;
+    const matchesType = typeFilter === "ALL" || report.type === typeFilter;
+    return matchesStatus && matchesType;
+  });
+
+  const handleStatusChange = async (reportId: string, newStatus: string) => {
+    if (!isModerator) {
+      toast.error(
+        "Vous n'avez pas les permissions pour modifier les signalements"
+      );
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/moderator/reports/${reportI"PATCH"        method: "PATC"Content-Type"ad"application/json"pe": "application/json"},
+        body: JSON.stringify{ status: newStatus }),
+      });
+
+      if (response.ok) {
+        toast.success("Statut mis à jour avec succès");
+        window.location.reload();
+      } else {
+        toast.error("Erreur lors de la mise à jour du statut");
+      }
+    } catch (error) {
+      toast.error("Erreur de connexion");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case "SPAM":
+        return <AlertTriangle className="h-4 w-4 text-red-500" />;
+      case "INAPPROPRIATE":
+        return <Flag className="h-4 w-4 text-orange-500" />;
+      case "HARASSMENT":
+        return <Shield className="h-4 w-4 text-red-600" />;
+      case "FAKE":
+        return <X className="h-4 w-4 text-yellow-500" />;
+      default:
+        return <Flag className="h-4 w-4 text-gray-500" />;
+    }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "PENDING":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
-      case "REVIEWED":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
       case "RESOLVED":
         return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
       case "DISMISSED":
         return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "INAPPROPRIATE_CONTENT":
-        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
-      case "SPAM":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
-      case "HARASSMENT":
-        return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300";
-      case "FAKE_LISTING":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
-      case "SCAM":
-        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
-      case "COPYRIGHT":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
     }
   };
 
-  const handleUpdateStatus = async (reportId: string, status: string) => {
-    try {
-      const response = await fetch(`/api/admin/reports/${reportId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-
-      if (response.ok) {
-        toast.success("Statut mis à jour");
-        window.location.reload();
-      } else {
-        toast.error("Erreur lors de la mise à jour");
-      }
-    } catch (error) {
-      toast.error("Erreur de connexion");
-    }
-  };
-
-  const handleDeleteContent = async (
-    reportId: string,
-    contentType: string,
-    contentId: string,
-  ) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer ce contenu ?")) return;
-
-    try {
-      const response = await fetch(
-        `/api/admin/content/${contentType}/${contentId}`,
-        {
-          method: "DELETE",
-        },
-      );
-
-      if (response.ok) {
-        // Marquer le signalement comme résolu
-        await handleUpdateStatus(reportId, "RESOLVED");
-        toast.success("Contenu supprimé");
-      } else {
-        toast.error("Erreur lors de la suppression");
-      }
-    } catch (error) {
-      toast.error("Erreur de connexion");
-    }
-  };
-
-  const filteredReports = reports.filter((report) => {
-    const matchesSearch =
-      report.details?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      getReportTypeLabel(report.type)
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      statusFilter === "ALL" || report.status === statusFilter;
-    const matchesType = typeFilter === "ALL" || report.type === typeFilter;
-    return matchesSearch && matchesStatus && matchesType;
-  });
-
-  const getContentInfo = (report: any) => {
+  const getContentLink = (report: Report) => {
     if (report.listing) {
-      return {
-        type: "Annonce",
-        title: report.listing.title,
-        author: report.listing.createdBy.name,
-        link: `/listings/${report.listing.id}`,
-        icon: Package,
-      };
+      return (
+        <Link
+          href={` / listings / $
+      {
+        report.listing.id;
+      }
+      `}
+          className="text-blue-600 hover:underline flex items-center gap-1"
+        >
+          <Package className="h-3 w-3" />
+          {report.listing.title}
+        </Link>
+      );
     }
     if (report.question) {
-      return {
-        type: "Question",
-        title: report.question.title,
-        author: report.question.author.name,
-        link: `/forum/${report.question.id}`,
-        icon: HelpCircle,
-      };
+      return (
+        <Link
+          href={` / forum / $
+      {
+        report.question.id;
+      }
+      `}
+          className="text-blue-600 hover:underline flex items-center gap-1"
+        >
+          <MessageSquare className="h-3 w-3" />
+          {report.question.title}
+        </Link>
+      );
     }
     if (report.answer) {
-      return {
-        type: "Réponse",
-        title: `Réponse à: ${report.answer.question.title}`,
-        author: report.answer.author.name,
-        link: `/forum/${report.answer.question.id}`,
-        icon: MessageSquare,
-      };
+      return (
+        <Link
+          href={` / forum / $
+      {
+        report.answer.question.id;
+      }
+      `}
+          className="text-blue-600 hover:underline flex items-center gap-1"
+        >
+          <MessageSquare className="h-3 w-3" />
+          Réponse à: {report.answer.question.title}
+        </Link>
+      );
     }
-    return null;
+    return <span className="text-muted-foreground">Contenu supprimé</span>;
   };
 
-  return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button asChild variant="ghost">
-            <Link href="/admin" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Retour au dashboard
-            </Link>
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-red-600">
-              Gestion des signalements
-            </h1>
-            <p className="text-muted-foreground">
-              {filteredReports.length} signalements trouvés
-            </p>
-          </div>
-        </div>
+  if (!isModerator) {
+    return (
+      <Card>
+        <CardContent className="text-center py-8">
+          <Shield className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Accès restreint</h3>
+          <p className="text-muted-foreground">
+            Seuls les modérateurs et administrateurs peuvent gérer les
+            signalements.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
-        <div className="flex gap-2">
-          <Badge className="bg-yellow-100 text-yellow-800">
-            {reports.filter((r) => r.status === "PENDING").length} en attente
-          </Badge>
-          <Badge className="bg-blue-100 text-blue-800">
-            {reports.filter((r) => r.status === "REVIEWED").length} en cours
-          </Badge>
-        </div>
+  return (
+    <div className="space-y-6">
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total</CardTitle>
+            <Flag className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalReports}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">En attente</CardTitle>
+            <Clock className="h-4 w-4 text-yellow-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-600">
+              {stats.pendingReports}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Résolus</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {stats.resolvedReports}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Aujourd'hui</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-red-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">
+              {stats.todayReports}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Filtres */}
+      {/* Filters */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Rechercher dans les signalements..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
+        <CardHeader>
+          <CardTitle>Filtres</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filtrer par statut" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Tous les statuts</SelectItem>
+                <SelectItem value="PENDING">En attente</SelectItem>
+                <SelectItem value="RESOLVED">Résolus</SelectItem>
+                <SelectItem value="DISMISSED">Rejetés</SelectItem>
+              </SelectContent>
+            </Select>
 
-            <div className="flex gap-2">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border rounded-md bg-background"
-              >
-                <option value="ALL">Tous les statuts</option>
-                <option value="PENDING">En attente</option>
-                <option value="REVIEWED">En cours</option>
-                <option value="RESOLVED">Résolus</option>
-                <option value="DISMISSED">Rejetés</option>
-              </select>
-
-              <select
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-                className="px-3 py-2 border rounded-md bg-background"
-              >
-                <option value="ALL">Tous les types</option>
-                <option value="INAPPROPRIATE_CONTENT">
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filtrer par type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Tous les types</SelectItem>
+                <SelectItem value="SPAM">Spam</SelectItem>
+                <SelectItem value="INAPPROPRIATE">
                   Contenu inapproprié
-                </option>
-                <option value="SPAM">Spam</option>
-                <option value="HARASSMENT">Harcèlement</option>
-                <option value="FAKE_LISTING">Fausse annonce</option>
-                <option value="SCAM">Arnaque</option>
-                <option value="COPYRIGHT">Droits d'auteur</option>
-                <option value="OTHER">Autre</option>
-              </select>
-            </div>
+                </SelectItem>
+                <SelectItem value="HARASSMENT">Harcèlement</SelectItem>
+                <SelectItem value="FAKE">Faux contenu</SelectItem>
+                <SelectItem value="OTHER">Autre</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
 
-      {/* Liste des signalements */}
-      <div className="space-y-4">
-        {filteredReports.map((report) => {
-          const contentInfo = getContentInfo(report);
-          const ContentIcon = contentInfo?.icon || Flag;
-
-          return (
-            <Card key={report.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      <Avatar className="h-8 w-8">
-                        {report.user.image ? (
-                          <AvatarImage
-                            src={report.user.image}
-                            alt={report.user.name}
-                          />
-                        ) : (
-                          <AvatarFallback>
-                            <User className="h-4 w-4" />
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
-                      <div>
-                        <p className="font-medium text-sm">
-                          Signalé par {report.user.name}
-                        </p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          {new Date(report.createdAt).toLocaleDateString(
-                            "fr-FR",
-                            {
-                              day: "numeric",
-                              month: "long",
-                              year: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            },
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 mb-3">
-                      <Badge className={getTypeColor(report.type)}>
-                        {getReportTypeLabel(report.type)}
-                      </Badge>
-                      <Badge className={getStatusColor(report.status)}>
-                        {report.status}
-                      </Badge>
-                    </div>
-
-                    {contentInfo && (
-                      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 mb-3">
-                        <div className="flex items-center gap-2 mb-2">
-                          <ContentIcon className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">
-                            {contentInfo.type} signalé
-                          </span>
-                        </div>
-                        <h4 className="font-medium text-sm mb-1">
-                          {contentInfo.title}
-                        </h4>
-                        <p className="text-xs text-muted-foreground">
-                          Par {contentInfo.author}
-                        </p>
-                      </div>
-                    )}
-
-                    {report.details && (
-                      <div className="border-l-4 border-yellow-400 pl-3 mb-3">
-                        <p className="text-sm text-muted-foreground italic">
-                          "{report.details}"
-                        </p>
-                      </div>
-                    )}
+      {/* Reports List */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Signalements ({filteredReports.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {filteredReports.map((report) => (
+              <div
+                key={report.id}
+                className="flex items-start justify-between p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center gap-2">
+                    {getTypeIcon(report.type)}
+                    <Badge className={getStatusColor(report.status)}>
+                      {report.status}
+                    </Badge>
+                    <span className="text-sm text-muted-foreground">
+                      {new Date(report.createdAt).toLocaleDateString("fr-FR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
                   </div>
 
-                  <div className="flex flex-col gap-2 min-w-[200px]">
-                    {contentInfo && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => window.open(contentInfo.link, "_blank")}
-                        className="w-full"
-                      >
-                        <Eye className="h-3 w-3 mr-1" />
-                        Voir le contenu
-                      </Button>
-                    )}
-
-                    {report.status === "PENDING" && (
-                      <>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() =>
-                            handleUpdateStatus(report.id, "REVIEWED")
-                          }
-                          className="w-full"
-                        >
-                          Prendre en charge
-                        </Button>
-
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-red-600 hover:text-red-700 w-full"
-                          onClick={() => {
-                            if (contentInfo) {
-                              const contentType =
-                                contentInfo.type.toLowerCase();
-                              const contentId =
-                                report.listingId ||
-                                report.questionId ||
-                                report.answerId;
-                              handleDeleteContent(
-                                report.id,
-                                contentType,
-                                contentId,
-                              );
-                            }
-                          }}
-                        >
-                          <Ban className="h-3 w-3 mr-1" />
-                          Supprimer le contenu
-                        </Button>
-                      </>
-                    )}
-
-                    {report.status === "REVIEWED" && (
-                      <div className="flex gap-1">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() =>
-                            handleUpdateStatus(report.id, "RESOLVED")
-                          }
-                          className="flex-1 text-green-600 hover:text-green-700"
-                        >
-                          <Check className="h-3 w-3" />
-                          Résoudre
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() =>
-                            handleUpdateStatus(report.id, "DISMISSED")
-                          }
-                          className="flex-1 text-gray-600 hover:text-gray-700"
-                        >
-                          <X className="h-3 w-3" />
-                          Rejeter
-                        </Button>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-8 w-8">
+                      {report.user.image ? (
+                        <AvatarImage
+                          src={report.user.image}
+                          alt={report.user.name || ""}
+                        />
+                      ) : (
+                        <AvatarFallback>
+                          <User className="h-4 w-4" />
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    <div>
+                      <p className="font-medium text-sm">
+                        Signalé par {report.user.name || "Utilisateur anonyme"}
+                      </p>
+                      <div className="text-sm text-muted-foreground">
+                        {getContentLink(report)}
                       </div>
-                    )}
+                    </div>
                   </div>
+
+                  {report.details && (
+                    <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded">
+                      <p className="text-sm">{report.details}</p>
+                    </div>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
 
-      {filteredReports.length === 0 && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <Flag className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-lg font-semibold mb-2">
-              Aucun signalement trouvé
-            </h3>
-            <p className="text-muted-foreground">
-              {reports.length === 0
-                ? "Aucun signalement n'a été soumis pour le moment."
-                : "Aucun signalement ne correspond à vos critères de recherche."}
-            </p>
-          </CardContent>
-        </Card>
-      )}
+                <div className="flex items-center gap-2 ml-4">
+                  {report.status === "PENDING" && (
+                    <>
+                      <Select
+                        value={report.status}
+                        onValueChange={(newStatus) =>
+                          handleStatusChange(report.id, newStatus)
+                        }
+                        disabled={isLoading}
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="PENDING">En attente</SelectItem>
+                          <SelectItem value="RESOLVED">Résoudre</SelectItem>
+                          <SelectItem value="DISMISSED">Rejeter</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </>
+                  )}
+
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href={` / admin / reports / $
+      {
+        report.id;
+      }
+      `}>
+                      <Eye className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            ))}
+
+            {filteredReports.length === 0 && (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">
+                  Aucun signalement trouvé
+                </p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

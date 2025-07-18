@@ -20,7 +20,7 @@ async function getUsersData() {
           },
         },
       },
-      take:0, // Pagination basique
+      take: 50, // Pagination basique
     }),
     {
       totalUsers: await prisma.user.count(),
@@ -29,11 +29,11 @@ async function getUsersData() {
       activeUsersThisMonth: await prisma.user.count({
         where: {
           createdAt: {
-            gte: new Date(new Date().getFullYear(), new Date().getMonth(), ),
-         },
-       },
-      ),
-   },
+            gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+          },
+        },
+      }),
+    },
   ]);
 
   // Transformer les données pour correspondre à l'interface User

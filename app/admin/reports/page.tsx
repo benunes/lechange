@@ -2,9 +2,14 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { RoleGuard } from "@/components/auth/role-guard";
 import { ReportsManagement } from "@/components/admin/reports-management";
 
-async function checkModerationAccess() {
+// Force dynamic rendering for this page
+
+export const dynamic = "force-dynamic";
+
+async function checkModeratorAccess() {
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) {
@@ -16,49 +21,92 @@ async function checkModerationAccess() {
     select: { role: true },
   });
 
-  if (!["ADMIN", "MODERATOR"].includes(user?.role || "")) {
+  if (user?.role !== "ADMIN" && user?.role !== "MODERATOR") {
     redirect("/");
   }
 
   return session;
 }
 
-async function getReports() {
-  return await prisma.report.findMany({
-    include: {
-      user: {
-        select: { id: true, name: true, image: true },
-      },
-      listing: {
-        select: {
-          id: true,
-          title: true,
-          createdBy: { select: { name: true } },
+async function getReportsData() {
+  const [reports, stats] = await Promise.all([
+    prisma.report.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
+        listing: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+        question: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+        answer: {
+          select: {
+            id: true,
+            content: true,
+            question: {
+              select: {
+                id: true,
+                title: true,
+              },
+            },
+          },
         },
       },
-      question: {
-        select: { id: true, title: true, author: { select: { name: true } } },
-      },
-      answer: {
-        select: {
-          id: true,
-          content: true,
-          author: { select: { name: true } },
-          question: { select: { id: true, title: true } },
+      take: 50,
+    }),
+    {
+      totalReports: await prisma.report.count(),
+      pendingReports: await prisma.report.count({
+        where: { status: "PENDING" },
+      }),
+      resolvedReports: await prisma.report.count({
+        where: { status: "RESOLVED" },
+      }),
+      todayReports: await prisma.report.count({
+        where: {
+          createdAt: {
+            gte: new Date(new Date().setHours(0, 0, 0, 0)),
+          },
         },
-      },
+      }),
     },
-    orderBy: { createdAt: "desc" },
-  });
+  ]);
+
+  return { reports, stats };
 }
 
 export default async function AdminReportsPage() {
-  await checkModerationAccess();
-  const reports = await getReports();
+  await checkModeratorAccess();
+  const { reports, stats } = await getReportsData();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <ReportsManagement reports={reports} />
-    </div>
+    <RoleGuard requiredRoles={["ADMIN", "MODERATOR"]}>
+      <div className="container mx-auto py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            Gestion des Signalements
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Examinez et traitez les signalements de la communauté
+          </p>
+        </div>
+
+        <ReportsManagement reports={reports} stats={stats} />
+      </div>
+    </RoleGuard>
   );
 }
