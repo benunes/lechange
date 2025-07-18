@@ -62,6 +62,7 @@ model User {
   adminLogs         AdminLog[]                @relation("AdminLogs")
   forumCategories   Category[]                @relation("ForumCategoryCreator")
   listingCategories ListingCategory[]         @relation("ListingCategoryCreator")
+  appSettings       AppSettings[]             @relation("AppSettingsUpdatedBy")
 
   @@map("user")
 }
@@ -349,4 +350,14 @@ model AdminLog {
 
   @@index([adminId])
   @@index([createdAt])
+}
+
+model AppSettings {
+  id        String   @id @default("default")
+  data      String // JSON string containing all settings
+  updatedBy String
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  updatedByUser User @relation("AppSettingsUpdatedBy", fields: [updatedBy], references: [id])
 }

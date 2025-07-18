@@ -103,112 +103,133 @@ export function AdminDashboard({ stats, recent }: AdminDashboardProps) {
       </div>
 
       {/* Navigation rapide */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {isAdmin && (
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-            <Link href="/admin/users">
-              <CardContent className="p-6 text-center">
-                <Users className="h-8 w-8 mx-auto mb-2 text-purple-600 group-hover:scale-110 transition-transform" />
-                <h3 className="font-semibold">Utilisateurs</h3>
-                <p className="text-sm text-muted-foreground">
-                  Gérer les comptes
-                </p>
-              </CardContent>
-            </Link>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <Link href="/admin/analytics">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Analytics & Rapports</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground">
+                Statistiques et analyses détaillées
+              </p>
+            </CardContent>
           </Card>
-        )}
+        </Link>
 
-        {(isAdmin || isModerator) && (
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-            <Link href="/admin/forum">
-              <CardContent className="p-6 text-center">
-                <MessageSquare className="h-8 w-8 mx-auto mb-2 text-blue-600 group-hover:scale-110 transition-transform" />
-                <h3 className="font-semibold">Forum</h3>
-                <p className="text-sm text-muted-foreground">
-                  Questions & réponses
-                </p>
-              </CardContent>
-            </Link>
+        <Link href="/admin/users">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Gestion des utilisateurs</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground">
+                Gérer les utilisateurs et leurs rôles
+              </p>
+            </CardContent>
           </Card>
-        )}
+        </Link>
 
-        {(isAdmin || isModerator) && (
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-            <Link href="/admin/listings">
-              <CardContent className="p-6 text-center">
-                <Package className="h-8 w-8 mx-auto mb-2 text-green-600 group-hover:scale-110 transition-transform" />
-                <h3 className="font-semibold">Annonces</h3>
-                <p className="text-sm text-muted-foreground">
-                  Gérer les annonces
-                </p>
-              </CardContent>
-            </Link>
+        <Link href="/admin/listings">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Gestion des annonces</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground">
+                Modérer et gérer toutes les annonces
+              </p>
+            </CardContent>
           </Card>
-        )}
+        </Link>
 
-        {(isAdmin || isModerator) && (
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-            <Link href="/admin/reports">
-              <CardContent className="p-6 text-center">
-                <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-red-600 group-hover:scale-110 transition-transform" />
-                <h3 className="font-semibold">Signalements</h3>
-                <p className="text-sm text-muted-foreground">
-                  {stats.pendingReports} en attente
-                </p>
-              </CardContent>
-            </Link>
+        <Link href="/admin/forum">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Gestion du forum</CardTitle>
+              <MessageSquare className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground">
+                Gérer les questions et réponses
+              </p>
+            </CardContent>
           </Card>
-        )}
+        </Link>
+
+        <Link href="/admin/listing-categories">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Catégories d'annonces</CardTitle>
+              <FolderOpen className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground">
+                Gérer les catégories d'annonces
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/admin/categories">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Catégories du forum</CardTitle>
+              <Tags className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground">
+                Gérer les catégories du forum
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/admin/reports">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Signalements</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground">
+                Traiter les signalements
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/admin/logs">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Journaux d'activité</CardTitle>
+              <Shield className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground">
+                Consulter les logs d'administration
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/admin/settings">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Paramètres</CardTitle>
+              <Settings className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground">
+                Configuration de l'application
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
-
-      {/* Gestion des catégories - Visible pour Admin et Modérateur */}
-      {(isAdmin || isModerator) && (
-        <div>
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <FolderOpen className="h-5 w-5 text-orange-600" />
-            Gestion des Catégories
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-              <Link href="/admin/categories">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                      <Tags className="h-6 w-6 text-blue-600 group-hover:scale-110 transition-transform" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">Catégories Forum</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Gérer les catégories de questions du forum
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Link>
-            </Card>
-
-            {isAdmin && (
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-                <Link href="/admin/listing-categories">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 rounded-lg bg-green-100 dark:bg-green-900/30">
-                        <Package className="h-6 w-6 text-green-600 group-hover:scale-110 transition-transform" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">Catégories Annonces</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Gérer les catégories et sous-catégories d'annonces
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Link>
-              </Card>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Statistiques */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
