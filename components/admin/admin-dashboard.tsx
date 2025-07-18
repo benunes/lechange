@@ -1,20 +1,23 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   AlertTriangle,
   Eye,
+  FolderOpen,
   MessageSquare,
   Package,
   Settings,
   Shield,
+  Tags,
   TrendingUp,
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { useUserRole } from "@/lib/hooks/use-user-role";
 
 interface AdminDashboardProps {
   stats: {
@@ -53,6 +56,8 @@ interface AdminDashboardProps {
 }
 
 export function AdminDashboard({ stats, recent }: AdminDashboardProps) {
+  const { isAdmin, isModerator } = useUserRole();
+
   const getRoleColor = (role: string) => {
     switch (role) {
       case "ADMIN":
@@ -78,69 +83,132 @@ export function AdminDashboard({ stats, recent }: AdminDashboardProps) {
         </div>
 
         <div className="flex gap-2">
-          <Button asChild variant="outline">
-            <Link href="/admin/settings">
-              <Settings className="h-4 w-4 mr-2" />
-              Paramètres
-            </Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/admin/moderation">
-              <Shield className="h-4 w-4 mr-2" />
-              Modération
-            </Link>
-          </Button>
+          {(isAdmin || isModerator) && (
+            <Button asChild variant="outline">
+              <Link href="/admin/settings">
+                <Settings className="h-4 w-4 mr-2" />
+                Paramètres
+              </Link>
+            </Button>
+          )}
+          {(isAdmin || isModerator) && (
+            <Button asChild variant="outline">
+              <Link href="/admin/moderation">
+                <Shield className="h-4 w-4 mr-2" />
+                Modération
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 
       {/* Navigation rapide */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-          <Link href="/admin/users">
-            <CardContent className="p-6 text-center">
-              <Users className="h-8 w-8 mx-auto mb-2 text-purple-600 group-hover:scale-110 transition-transform" />
-              <h3 className="font-semibold">Utilisateurs</h3>
-              <p className="text-sm text-muted-foreground">Gérer les comptes</p>
-            </CardContent>
-          </Link>
-        </Card>
+        {isAdmin && (
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+            <Link href="/admin/users">
+              <CardContent className="p-6 text-center">
+                <Users className="h-8 w-8 mx-auto mb-2 text-purple-600 group-hover:scale-110 transition-transform" />
+                <h3 className="font-semibold">Utilisateurs</h3>
+                <p className="text-sm text-muted-foreground">
+                  Gérer les comptes
+                </p>
+              </CardContent>
+            </Link>
+          </Card>
+        )}
 
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-          <Link href="/admin/forum">
-            <CardContent className="p-6 text-center">
-              <MessageSquare className="h-8 w-8 mx-auto mb-2 text-blue-600 group-hover:scale-110 transition-transform" />
-              <h3 className="font-semibold">Forum</h3>
-              <p className="text-sm text-muted-foreground">
-                Questions & réponses
-              </p>
-            </CardContent>
-          </Link>
-        </Card>
+        {(isAdmin || isModerator) && (
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+            <Link href="/admin/forum">
+              <CardContent className="p-6 text-center">
+                <MessageSquare className="h-8 w-8 mx-auto mb-2 text-blue-600 group-hover:scale-110 transition-transform" />
+                <h3 className="font-semibold">Forum</h3>
+                <p className="text-sm text-muted-foreground">
+                  Questions & réponses
+                </p>
+              </CardContent>
+            </Link>
+          </Card>
+        )}
 
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-          <Link href="/admin/listings">
-            <CardContent className="p-6 text-center">
-              <Package className="h-8 w-8 mx-auto mb-2 text-green-600 group-hover:scale-110 transition-transform" />
-              <h3 className="font-semibold">Annonces</h3>
-              <p className="text-sm text-muted-foreground">
-                Gérer les annonces
-              </p>
-            </CardContent>
-          </Link>
-        </Card>
+        {(isAdmin || isModerator) && (
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+            <Link href="/admin/listings">
+              <CardContent className="p-6 text-center">
+                <Package className="h-8 w-8 mx-auto mb-2 text-green-600 group-hover:scale-110 transition-transform" />
+                <h3 className="font-semibold">Annonces</h3>
+                <p className="text-sm text-muted-foreground">
+                  Gérer les annonces
+                </p>
+              </CardContent>
+            </Link>
+          </Card>
+        )}
 
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-          <Link href="/admin/reports">
-            <CardContent className="p-6 text-center">
-              <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-red-600 group-hover:scale-110 transition-transform" />
-              <h3 className="font-semibold">Signalements</h3>
-              <p className="text-sm text-muted-foreground">
-                {stats.pendingReports} en attente
-              </p>
-            </CardContent>
-          </Link>
-        </Card>
+        {(isAdmin || isModerator) && (
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+            <Link href="/admin/reports">
+              <CardContent className="p-6 text-center">
+                <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-red-600 group-hover:scale-110 transition-transform" />
+                <h3 className="font-semibold">Signalements</h3>
+                <p className="text-sm text-muted-foreground">
+                  {stats.pendingReports} en attente
+                </p>
+              </CardContent>
+            </Link>
+          </Card>
+        )}
       </div>
+
+      {/* Gestion des catégories - Visible pour Admin et Modérateur */}
+      {(isAdmin || isModerator) && (
+        <div>
+          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+            <FolderOpen className="h-5 w-5 text-orange-600" />
+            Gestion des Catégories
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+              <Link href="/admin/categories">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                      <Tags className="h-6 w-6 text-blue-600 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">Catégories Forum</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Gérer les catégories de questions du forum
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Link>
+            </Card>
+
+            {isAdmin && (
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+                <Link href="/admin/listing-categories">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 rounded-lg bg-green-100 dark:bg-green-900/30">
+                        <Package className="h-6 w-6 text-green-600 group-hover:scale-110 transition-transform" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">Catégories Annonces</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Gérer les catégories et sous-catégories d'annonces
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Link>
+              </Card>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Statistiques */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

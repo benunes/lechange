@@ -1,28 +1,9 @@
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
+import { RoleGuard } from "@/components/auth/role-guard";
 
-// Vérifier si l'utilisateur est admin
-async function checkAdminAccess() {
-  const session = await auth.api.getSession({ headers: await headers() });
-
-  if (!session) {
-    redirect("/login");
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true },
-  });
-
-  if (user?.role !== "ADMIN") {
-    redirect("/");
-  }
-
-  return session;
-}
+// Force dynamic rendering for this page
+export const dynamic = "force-dynamic";
 
 // Récupérer les statistiques pour le dashboard
 async function getAdminStats() {
@@ -127,12 +108,13 @@ async function getAdminStats() {
 }
 
 export default async function AdminPage() {
-  await checkAdminAccess();
   const data = await getAdminStats();
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <AdminDashboard {...data} />
+      <RoleGuard requiredRole="ADMIN">
+        <AdminDashboard {...data} />
+      </RoleGuard>
     </div>
   );
 }

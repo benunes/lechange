@@ -112,7 +112,7 @@ const COLOR_OPTIONS = [
 export function ListingCategoriesManagement({
   categories: initialCategories,
 }: ListingCategoriesManagementProps) {
-  const [categories, setCategories] = useState(initialCategories);
+  const [categories] = useState(initialCategories);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] =
     useState<ListingCategory | null>(null);
@@ -265,14 +265,17 @@ export function ListingCategoriesManagement({
                   <Select
                     value={formData.parentId}
                     onValueChange={(value) =>
-                      setFormData((prev) => ({ ...prev, parentId: value }))
+                      setFormData((prev) => ({
+                        ...prev,
+                        parentId: value === "none" ? "" : value,
+                      }))
                     }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Catégorie principale" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Catégorie principale</SelectItem>
+                      <SelectItem value="none">Catégorie principale</SelectItem>
                       {parentCategories.map((cat) => (
                         <SelectItem key={cat.id} value={cat.id}>
                           <div className="flex items-center gap-2">

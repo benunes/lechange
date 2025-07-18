@@ -21,7 +21,7 @@ import {
 import Link from "next/link";
 
 async function getListing(id: string) {
-  return await prisma.listing.findUnique({
+  return prisma.listing.findUnique({
     where: { id },
     include: {
       createdBy: {

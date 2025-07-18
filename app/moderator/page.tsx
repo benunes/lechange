@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { RoleGuard } from "@/components/auth/role-guard";
 import { ModeratorDashboard } from "@/components/moderator/moderator-dashboard";
 
 // Vérifier si l'utilisateur est modérateur ou admin
@@ -153,17 +154,21 @@ export default async function ModeratorPage() {
   const stats = await getModeratorStats();
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-          Tableau de bord Modérateur
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Gérez les signalements et modérez le contenu de la communauté
-        </p>
-      </div>
+    <RoleGuard requiredRoles={["ADMIN", "MODERATOR"]}>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="container mx-auto py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Tableau de bord Modérateur
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Gérez les signalements et modérez le contenu de la communauté
+            </p>
+          </div>
 
-      <ModeratorDashboard stats={stats} />
-    </div>
+          <ModeratorDashboard stats={stats} />
+        </div>
+      </div>
+    </RoleGuard>
   );
 }
