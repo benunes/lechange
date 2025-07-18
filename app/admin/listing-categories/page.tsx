@@ -1,46 +1,47 @@
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { headers } from "next/headers";
+import { RoleGuard } from "@/components/auth/role-guard";
 import { ListingCategoriesManagement } from "@/components/admin/listing-categories-management";
 
-export default async function AdminListingCategoriesPage() {
-  const session = await auth.api.getSession({ headers: await headers() });
+// Force dynamic rendering for this page
+export const dynamic = "force-dynamic";
 
-  const categories = await prisma.listingCategory.findMany({
+async function getListingCategories() {
+  return prisma.listingCategory.findMany({
     orderBy: [{ parentId: "asc" }, { order: "asc" }],
     include: {
       subcategories: {
         orderBy: { order: "asc" },
         include: {
           _count: {
-            select: {
-              listings: true,
-            },
+            select: { listings: true },
           },
         },
       },
       _count: {
-        select: {
-          listings: true,
-        },
+        select: { listings: true ,
       },
     },
   });
+}
+
+export default async function AdminListingCategoriesPage() {
+  const categories = await getListingCategories();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <RoleGuard requiredRole="ADMIN">
       <div className="container mx-auto py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Gestion des Catégories d'Annonces
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            Administration des Catégories d'Annonces
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Gérez les catégories et sous-catégories pour les annonces
+          <p className="text-muted-foreground mt-2">
+            Créez et gérez les catégories et sous-catégories pour organiser les
+            annonces
           </p>
         </div>
 
         <ListingCategoriesManagement categories={categories} />
       </div>
-    </div>
+    </RoleGuard>
   );
 }
