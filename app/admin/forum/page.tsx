@@ -1,60 +1,104 @@
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { ForumModeration } from "@/components/admin/forum-moderation";
+import { ForumManagement } from "@/components/admin/forum-management";
+import { RoleGuard } from "@/components/auth/role-guard";
 
-async function checkAdminAccess() {
-  const session = await auth.api.getSession({ headers: await headers() });
-
-  if (!session) {
-    redirect("/login");
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true },
-  });
-
-  if (!["ADMIN", "MODERATOR"].includes(user?.role || "")) {
-    redirect("/");
-  }
-
-  return session;
-}
+export const dynamic = "force-dynamic";
 
 async function getForumData() {
-  const [questions, answers, reports] = await Promise.all([
+  const [questions, answers, categories, stats] = await Promise.all([
     prisma.question.findMany({
       include: {
-        author: { select: { id: true, name: true, image: true } },
-        _count: { select: { answers: true } },
+        author: {
+          select: { name: true, email: true, image: true },
+        },
+        category: {
+          select: { name: true, icon: true, color: true },
+        },
+        answers: {
+          select: { id: true, author: { select: { name: true } } },
+        },
+        followers: {
+          select: { userId: true },
+        },
+        reports: {
+          where: { status: "PENDING" },
+          select: { id: true, type: true },
+        },
+        _count: {
+          select: {
+            answers: true,
+            followers: true,
+            reports: true,
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
-      take: 50,
     }),
     prisma.answer.findMany({
       include: {
-        author: { select: { id: true, name: true, image: true } },
-        question: { select: { id: true, title: true } },
+        author: {
+          select: { name: true, email: true, image: true },
+        },
+        question: {
+          select: { title: true, author: { select: { name: true } } },
+        },
+        votes: {
+          select: { isUpvote: true },
+        },
+        reports: {
+          where: { status: "PENDING" },
+          select: { id: true, type: true },
+        },
+        _count: {
+          select: {
+            votes: true,
+            reports: true,
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
-      take: 30,
     }),
-    // Simuler les signalements pour l'instant
-    [],
+    prisma.category.findMany({
+      include: {
+        _count: {
+          select: {
+            questions: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.question.groupBy({
+      by: ["categoryId"],
+      _count: true,
+    }),
   ]);
 
-  return { questions, answers, reports };
+  return { questions, answers, categories, stats };
 }
 
 export default async function AdminForumPage() {
-  await checkAdminAccess();
-  const data = await getForumData();
+  const { questions, answers, categories, stats } = await getForumData();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <ForumModeration {...data} />
-    </div>
+    <RoleGuard requiredRoles={["ADMIN"]}>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Gestion du Forum</h1>
+            <p className="text-muted-foreground">
+              Gérez les questions, réponses et catégories du forum
+            </p>
+          </div>
+        </div>
+
+        <ForumManagement
+          questions={questions}
+          answers={answers}
+          categories={categories}
+          stats={stats}
+        />
+      </div>
+    </RoleGuard>
   );
 }

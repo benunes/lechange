@@ -3,7 +3,30 @@
 import { useState } from "react";
 import { useUserRole } from "@/lib/hooks/use-user-role";
 import { toast } from "sonner";
-import { MessageSquare, Package } from "lucide-react";
+import {
+  MessageSquare,
+  Package,
+  AlertTriangle,
+  Flag,
+  Shield,
+  X,
+  Clock,
+  CheckCircle,
+  Eye,
+  User,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Link from "next/link";
 
 interface Report {
   id: string;
@@ -68,8 +91,12 @@ export function ReportsManagement({ reports, stats }: ReportsManagementProps) {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/moderator/reports/${reportI"PATCH"        method: "PATC"Content-Type"ad"application/json"pe": "application/json"},
-        body: JSON.stringify{ status: newStatus }),
+      const response = await fetch(`/api/moderator/reports/${reportId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
       });
 
       if (response.ok) {
@@ -117,11 +144,7 @@ export function ReportsManagement({ reports, stats }: ReportsManagementProps) {
     if (report.listing) {
       return (
         <Link
-          href={` / listings / $
-      {
-        report.listing.id;
-      }
-      `}
+          href={`/listings/${report.listing.id}`}
           className="text-blue-600 hover:underline flex items-center gap-1"
         >
           <Package className="h-3 w-3" />
@@ -132,11 +155,7 @@ export function ReportsManagement({ reports, stats }: ReportsManagementProps) {
     if (report.question) {
       return (
         <Link
-          href={` / forum / $
-      {
-        report.question.id;
-      }
-      `}
+          href={`/forum/${report.question.id}`}
           className="text-blue-600 hover:underline flex items-center gap-1"
         >
           <MessageSquare className="h-3 w-3" />
@@ -147,11 +166,7 @@ export function ReportsManagement({ reports, stats }: ReportsManagementProps) {
     if (report.answer) {
       return (
         <Link
-          href={` / forum / $
-      {
-        report.answer.question.id;
-      }
-      `}
+          href={`/forum/${report.answer.question.id}`}
           className="text-blue-600 hover:underline flex items-center gap-1"
         >
           <MessageSquare className="h-3 w-3" />
@@ -348,11 +363,7 @@ export function ReportsManagement({ reports, stats }: ReportsManagementProps) {
                   )}
 
                   <Button variant="ghost" size="sm" asChild>
-                    <Link href={` / admin / reports / $
-      {
-        report.id;
-      }
-      `}>
+                    <Link href={`/admin/reports/${report.id}`}>
                       <Eye className="h-4 w-4" />
                     </Link>
                   </Button>
