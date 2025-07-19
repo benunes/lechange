@@ -47,23 +47,11 @@ export function MessageForm({
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     startTransition(async () => {
+      // Sauvegarder le contenu avant de vider le formulaire
+      const contentToSend = values.content;
+
       try {
-        // Mise à jour optimiste - afficher le message immédiatement
-        const optimisticMessage: Message = {
-          id: `temp-${Date.now()}`,
-          content: values.content,
-          createdAt: new Date(),
-          sender: {
-            id: "current-user", // Sera remplacé par les vraies données
-            name: "Vous",
-            image: null,
-          },
-        };
-
-        // Afficher le message optimiste
-        onMessageSent?.(optimisticMessage);
-
-        // Vider le formulaire immédiatement
+        // Vider le formulaire immédiatement pour une meilleure UX
         form.reset();
 
         // Envoyer le message au serveur
@@ -73,8 +61,8 @@ export function MessageForm({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            content: values.content,
-            conversationId, // Correction: conversationId au lieu de conversationId
+            content: contentToSend,
+            conversationId,
           }),
         });
 
@@ -87,12 +75,15 @@ export function MessageForm({
         if (!result.success) {
           throw new Error(result.error || "Erreur lors de l'envoi");
         }
+
+        // Pas de mise à jour optimiste - on laisse le système temps réel gérer l'affichage
+        // Le message apparaîtra via useRealtimeMessages
       } catch (error) {
         console.error("Erreur envoi message:", error);
         toast.error("Impossible d'envoyer le message");
 
         // En cas d'erreur, remettre le contenu dans le formulaire
-        form.setValue("content", values.content);
+        form.setValue("content", contentToSend);
       }
     });
   };
