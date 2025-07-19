@@ -8,6 +8,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { prisma } from "@/lib/db";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -25,7 +27,7 @@ import {
 
 async function getListings() {
   // Récupérer les annonces récentes
-  const listings = await prisma.listing.findMany({
+  return await prisma.listing.findMany({
     take: 6,
     orderBy: { createdAt: "desc" },
     include: {
@@ -38,7 +40,6 @@ async function getListings() {
       },
     },
   });
-  return listings;
 }
 
 async function getStats() {
@@ -50,6 +51,7 @@ async function getStats() {
 }
 
 export default async function Home() {
+  const session = await auth.api.getSession({ headers: await headers() });
   const [listings, stats] = await Promise.all([getListings(), getStats()]);
 
   return (
@@ -90,9 +92,14 @@ export default async function Home() {
                 size="lg"
                 className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
               >
-                <Link href="/register" className="flex items-center gap-2">
+                <Link
+                  href={session?.user ? "/forum" : "/register"}
+                  className="flex items-center gap-2"
+                >
                   <Zap className="h-5 w-5" />
-                  Rejoindre la communauté
+                  {session?.user
+                    ? "Rejoindre les discussions"
+                    : "Rejoindre la communauté"}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>

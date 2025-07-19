@@ -1,8 +1,9 @@
-import {Header} from "@/components/layout/header";
-import {ThemeProvider} from "@/components/theme-provider";
-import {Toaster} from "@/components/ui/sonner";
-import type {Metadata} from "next";
-import {Geist, Geist_Mono} from "next/font/google";
+import { Header } from "@/components/layout/header";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
+import { ErrorBoundary } from "@/components/errors/error-boundary";
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -26,17 +27,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-      <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <Header/>
-          <main className="w-full mt-3 px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20 2xl:px-24">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <ErrorBoundary>
+            <Header />
+            <main className="w-full mt-3 px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20 2xl:px-24">
               {children}
-          </main>
-          <Toaster/>
-      </ThemeProvider>
+            </main>
+          </ErrorBoundary>
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );
