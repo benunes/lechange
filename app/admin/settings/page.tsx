@@ -59,17 +59,8 @@ export default async function AdminSettingsPage() {
 
   return (
     <RoleGuard requiredRoles={["ADMIN"]}>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Paramètres de l'application</h1>
-            <p className="text-muted-foreground">
-              Configurez les paramètres généraux de la plateforme
-            </p>
-          </div>
-        </div>
-
-        <SettingsManagement settings={settings} />
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <SettingsManagement />
       </div>
     </RoleGuard>
   );
