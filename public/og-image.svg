@@ -1,0 +1,95 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Fond avec gradient -->
+    <rect width="1200" height="630" fill="url(#ogGradient)"/>
+
+    <!-- Définitions -->
+    <defs>
+        <linearGradient id="ogGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1"/>
+            <stop offset="50%" style="stop-color:#ec4899;stop-opacity:1"/>
+            <stop offset="100%" style="stop-color:#f97316;stop-opacity:1"/>
+        </linearGradient>
+
+        <filter id="textShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="3" dy="6" stdDeviation="4" flood-color="rgba(0,0,0,0.4)"/>
+        </filter>
+
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+            <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+
+    <!-- Motif de fond -->
+    <g opacity="0.1">
+        <circle cx="100" cy="100" r="30" fill="white"/>
+        <circle cx="1100" cy="100" r="40" fill="white"/>
+        <circle cx="150" cy="500" r="35" fill="white"/>
+        <circle cx="1050" cy="530" r="25" fill="white"/>
+        <circle cx="300" cy="50" r="20" fill="white"/>
+        <circle cx="900" cy="580" r="30" fill="white"/>
+    </g>
+
+    <!-- Titre principal -->
+    <text x="600" y="200" text-anchor="middle" font-family="system-ui, sans-serif" font-size="96" font-weight="bold"
+          fill="white" filter="url(#textShadow)">
+        LéChange
+    </text>
+
+    <!-- Slogan -->
+    <text x="600" y="280" text-anchor="middle" font-family="system-ui, sans-serif" font-size="48" font-weight="600"
+          fill="rgba(255,255,255,0.9)" filter="url(#textShadow)">
+        Échange, Partage, Connecte-toi !
+    </text>
+
+    <!-- Description -->
+    <text x="600" y="350" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28"
+          fill="rgba(255,255,255,0.8)">
+        La plateforme d'échange nouvelle génération
+    </text>
+    <text x="600" y="390" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28"
+          fill="rgba(255,255,255,0.8)">
+        pour les jeunes
+    </text>
+
+    <!-- Icônes décoratives -->
+    <g fill="rgba(255,255,255,0.7)" filter="url(#glow)">
+        <!-- Échange -->
+        <g transform="translate(400, 450)">
+            <circle cx="0" cy="0" r="25" fill="rgba(255,255,255,0.2)" stroke="currentColor" stroke-width="2"/>
+            <path d="M-15 -5 L15 -5 M10 -10 L15 -5 L10 0" stroke="currentColor" stroke-width="2" fill="none"
+                  stroke-linecap="round"/>
+            <path d="M15 5 L-15 5 M-10 0 L-15 5 L-10 10" stroke="currentColor" stroke-width="2" fill="none"
+                  stroke-linecap="round"/>
+        </g>
+
+        <!-- Communauté -->
+        <g transform="translate(600, 450)">
+            <circle cx="0" cy="0" r="25" fill="rgba(255,255,255,0.2)" stroke="currentColor" stroke-width="2"/>
+            <circle cx="-8" cy="-5" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
+            <circle cx="8" cy="-5" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M-15 10 C-15 5 -10 3 -8 3 C-6 3 -1 5 -1 10" stroke="currentColor" stroke-width="2" fill="none"/>
+            <path d="M1 10 C1 5 6 3 8 3 C10 3 15 5 15 10" stroke="currentColor" stroke-width="2" fill="none"/>
+        </g>
+
+        <!-- Forum -->
+        <g transform="translate(800, 450)">
+            <circle cx="0" cy="0" r="25" fill="rgba(255,255,255,0.2)" stroke="currentColor" stroke-width="2"/>
+            <rect x="-12" y="-8" width="16" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M-8 8 L-4 12 L4 8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"
+                  stroke-linejoin="round"/>
+        </g>
+    </g>
+
+    <!-- Étoiles décoratives -->
+    <g fill="rgba(255,255,255,0.4)">
+        <path d="M200 150 L205 165 L220 165 L208 175 L213 190 L200 182 L187 190 L192 175 L180 165 L195 165 Z"/>
+        <path d="M1000 200 L1003 210 L1013 210 L1005 217 L1008 227 L1000 222 L992 227 L995 217 L987 210 L997 210 Z"/>
+        <path d="M150 300 L153 308 L161 308 L155 313 L158 321 L150 317 L142 321 L145 313 L139 308 L147 308 Z"/>
+        <path d="M1050 350 L1053 358 L1061 358 L1055 363 L1058 371 L1050 367 L1042 371 L1045 363 L1039 358 L1047 358 Z"/>
+    </g>
+</svg>
+
