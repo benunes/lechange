@@ -13,8 +13,11 @@ export interface MentionMatch {
 
 // Fonction pour extraire les mentions d'un texte
 export function extractMentions(text: string): MentionMatch[] {
-  // Regex simple qui capture maximum 2 mots après @
-  const mentionRegex = /@([A-Za-zÀ-ÿ]+(?:\s+[A-Za-zÀ-ÿ]+)?)/g;
+  // Regex qui accepte les chiffres, limite la mention à deux mots et
+  // arrête la capture à un espace ou un signe de ponctuation pour éviter
+  // d'inclure des caractères non désirés dans la mention
+  const mentionRegex =
+    /@([A-Za-zÀ-ÿ0-9]+(?:\s+[A-Za-zÀ-ÿ0-9]+)?)(?=\s|$|[,.!?;:])/g;
   const mentions: MentionMatch[] = [];
   let match;
 
